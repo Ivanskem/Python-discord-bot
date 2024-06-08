@@ -45,8 +45,18 @@ async def on_message(message):
     if message.content.startswith('.help') and any(role.name == "Администратор" for role in message.author.roles):
         await handle_help(message)
 
+    if message.content.startswith('.mute') and any(role.name == 'Администратор' for role in message.author.roles):
+        await handle_mute(message)
+
+    if message.content.startswith('.unmute') and any(role.name == 'Администратор' for role in message.author.roles):
+        await handle_unmute(message)
+
+    if message.content.startswith('.unban') and any(role.name == 'Администратор' for role in message.author.roles):
+        await handle_unban(message)
 # Функция для обработки команды .ban
 async def handle_ban(message):
+    async for msg in message.channel.history(limit=1):
+        await msg.delete()
     parts = message.content.split(' ')
     if len(parts) > 2 and len(message.mentions) == 1:
         target_user = message.mentions[0]
@@ -64,6 +74,8 @@ async def handle_ban(message):
 #функция для обработки команды .kick
 
 async def handle_kick(message):
+    async for msg in message.channel.history(limit=1):
+        await msg.delete()
     parts = message.content.split(' ')
     if len(parts) > 2 and len(message.mentions) == 1:
         target_user = message.mentions[0]
@@ -81,13 +93,15 @@ async def handle_kick(message):
 # Функция для обработки команды .serverinfo
 
 async def handle_serverinfo(message):
-    async for msg in message.channel.history(limit=2):
+    async for msg in message.channel.history(limit=1):
         await msg.delete()
     embed = discord.Embed(title="Информация о сервере", color=discord.Color.blue())
     embed.add_field(name="Участники", value=f"Всего участников: {len(message.guild.members)}", inline=False)
     embed.add_field(name="Каналы", value=f"Текстовых каналов: {len(message.guild.text_channels)}\nГолосовых каналов: {len(message.guild.voice_channels)}\nКатегорий: {len(message.guild.categories)}", inline=False)
     channel_stat = discord.utils.get(message.guild.channels, name="статистика")
     if channel_stat:
+        async for msg in channel_stat.history(limit=1):
+            await msg.delete()
         await channel_stat.send(embed=embed)
     else:
         print("Канал 'статистика' не найден")
@@ -115,12 +129,73 @@ async def handle_clear(message):
         await message.author.send(
             'Не указано количество сообщений для очистки. Используйте ".clear all" для очистки всех сообщений или ".clear [число] для очистки заданного количества сообщений.')
 async def handle_members(message):
+    async for msg in message.channel.history(limit=1):
+        await msg.delete()
     members_info = [f"{member.mention}-{member.name} (ID: {member.id})" for member in message.guild.members]
     embed = discord.Embed(title='Участники сервера', description='\n'.join(members_info), color=0xffffff)
     await message.channel.send(embed=embed)
 
 async def handle_help(message):
+    async for msg in message.channel.history(limit=1):
+        await msg.delete()
     embed = discord.Embed(title="Доступные команды сервера", color=0xffffff)
-    embed.add_field(name="Модерация", value=f"Блокировка: .ban @Нарушитель причина \nУдаление: .kick @Нарушитель причина \nОтчистка: .clear количество(можно цифрой либо all для удаления всего \nСписок всех учатников: .members \nВывод информации о сервере: .serverinfo(писать только в канал статистика)", inline=False)
-    await message.channel.send(embed=embed)
+    embed.add_field(name="Модерация", value=f"Блокировка: .ban @Нарушитель причина \nРазблокировка: .unban @Нарушитель причина \nУдаление: .kick @Нарушитель причина \nОтчистка: .clear количество(можно цифрой либо all для удаления всего \nСписок всех учатников: .members \nВывод информации о сервере: .serverinfo(писать только в канал статистика) \nЗаглушение участника: .mute @Нарушитель причина \nРазглушение участника: .unmute @Нарушитель причина", inline=False)
+    chanel_mod = discord.utils.get(message.guild.channels, name="bot-commands")
+    await chanel_mod.send(embed=embed)
+async def handle_mute(message):
+    async for msg in message.channel.history(limit=1):
+        await msg.delete()
+    parts = message.content.split(' ')
+    if len(parts) > 2 and len(message.mentions) == 1:
+        target_user = message.mentions[0]
+        reason = ' '.join(parts[2:])
+        try:
+            mute_role = discord.utils.get(message.guild.roles, name="Muted")
+            if not mute_role:
+                mute_role = await message.guild.create_role(name="Muted", permissions=discord.Permissions(send_messages=False, speak=False))
+                await mute_role.edit(position=1)
+            await target_user.add_roles(mute_role, reason=reason)
+            embed = discord.Embed(title="Информация о заглушении", color=discord.Color.dark_purple())
+            embed.add_field(name=" ", value=f"Администратор: {message.author.mention}\nПричина: {reason}\nЗаглушенный: {target_user.mention}", inline=False)
+            await message.channel.send(embed=embed)
+        except discord.errors.Forbidden:
+            await message.channel.send(f'У меня нет прав для заглушения {target_user.mention}.')
+    else:
+        await message.channel.send('Неверный формат команды. Используйте: .mute @игрок причина')
+async def handle_unmute(message):
+    async for msg in message.channel.history(limit=1):
+        await msg.delete()
+    parts = message.content.split(' ')
+    if len(parts) > 2 and len(message.mentions) == 1:
+        target_user = message.mentions[0]
+        reason = ' '.join(parts[2:])
+        try:
+            mute_role = discord.utils.get(message.guild.roles, name="Muted")
+            if mute_role:
+                await target_user.remove_roles(mute_role, reason=reason)
+                embed = discord.Embed(title="Информация о разглушении", color=discord.Color.blue())
+                embed.add_field(name=" ", value=f"Администратор: {message.author.mention}\nПричина:{reason}\nРазглушённый: {target_user.mention}", inline=False)
+                await message.channel.send(embed=embed)
+        except:
+            await message.channel.send(f"У меня нет прав для разглушения {target_user.mention}.")
+    else:
+        await message.channel.send('Неверный формат команды. Используйте: .unmute @игрок причина')
+async def handle_unban(message):
+    async for msg in message.channel.history(limit=1):
+        await msg.delete()
+    parts = message.content.split(' ')
+    if len(parts) > 2:
+        user_id = parts[1].replace('<@!', '').replace('>', '').replace('@', '').replace('<', '')
+        reason = ' '.join(parts[2:])
+        try:
+            await message.guild.unban(discord.Object(id=int(user_id)), reason=reason)
+            embed = discord.Embed(title="Информация о разблокировке", color=discord.Color.blue())
+            embed.add_field(name=" ", value=f"Администратор: {message.author}\nПричина: {reason}\nРазблокированный: <@{user_id}>", inline=False)
+            await message.channel.send(embed=embed)
+        except discord.errors.Forbidden:
+            await message.channel.send(f'У меня нет прав для разблокировки пользователя.')
+        except discord.errors.NotFound:
+            await message.channel.send(f'Пользователь с ID {user_id} не найден.')
+    else:
+        await message.channel.send('Неверный формат команды. Используйте: .unban <@пользователь> причина')
 client.run('MTI0NjY1Mzg3MjQyMDY4Mzg4Ng.G1N5gg.2vL4aj8ZWornQxSTKwNgjG9aBvQ6CNL_az9tOg')
