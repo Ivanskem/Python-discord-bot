@@ -1,4 +1,6 @@
 import discord
+import requests
+import datetime
 # from discord.ext import commands
 # import asyncio
 # import flet as ft
@@ -45,8 +47,11 @@ async def on_message(message):
     if message.content.startswith('.member') and any(role.name == "Администратор" for role in message.author.roles):
         await handle_memberinfo(message)
 
-    if message.content.startswith('.help') and any(role.name == "Администратор" for role in message.author.roles):
+    if message.content.startswith('.modhelp') and any(role.name == "Администратор" for role in message.author.roles):
         await handle_help(message)
+
+    # if message.content.split('.help') and any(role.name == "Администратор" for role in message.author.roles):
+    #     await handle_member_help(message)
 
     if message.content.startswith('.mute') and any(role.name == 'Администратор' for role in message.author.roles):
         await handle_mute(message)
@@ -59,6 +64,10 @@ async def on_message(message):
 
     if message.content.startswith('.avatar') and any(role.name == 'Администратор' for role in message.author.roles):
         await handle_avatar(message)
+
+    if message.content.startswith('.weather') and any(role.name == 'Администратор' for role in message.author.roles):
+        await handle_weather(message)
+
 # Функция для обработки команды .ban
 async def handle_ban(message):
     async for msg in message.channel.history(limit=1):
@@ -75,8 +84,9 @@ async def handle_ban(message):
         except discord.errors.Forbidden:
             await message.channel.send(f'У меня нет прав для блокировки {target_user.mention}.')
     else:
-        await message.channel.send('Неверный формат команды. Используйте: .ban @игрок причина')
-
+        embed = discord.Embed(title=f"Ошибка", color=0xff0000)
+        embed.add_field(name=" ", value='Неверный формат команды. Используйте: .ban @игрок причина')
+        await message.channel.send(embed=embed)
 #функция для обработки команды .kick
 
 async def handle_kick(message):
@@ -94,8 +104,9 @@ async def handle_kick(message):
         except discord.errors.Forbidden:
              await message.channel.send(f'У меня нет прав для кика {target_user.mention}.')
     else:
-        await message.channel.send('Неверный формат команды. Используйте: .kick @игрок причина')
-
+        embed = discord.Embed(title=f"Ошибка", color=0xff0000)
+        embed.add_field(name=" ", value='Неверный формат команды. Используйте: .kick @игрок причина')
+        await message.channel.send(embed=embed)
 # Функция для обработки команды .serverinfo
 
 async def handle_serverinfo(message):
@@ -110,7 +121,9 @@ async def handle_serverinfo(message):
             await msg.delete()
         await channel_stat.send(embed=embed)
     else:
-        print("Канал 'статистика' не найден")
+        embed = discord.Embed(title=f"Ошибка", color=0xff0000)
+        embed.add_field(name=" ", value="Канал 'статистика' не найден")
+        await message.channel.send(embed=embed)
 
 # Функция для обработки команды .clear
 async def handle_clear(message):
@@ -132,8 +145,9 @@ async def handle_clear(message):
             except discord.errors.Forbidden:
                 await message.author.send('У меня нет прав для очистки сообщений.')
     else:
-        await message.author.send(
-            'Не указано количество сообщений для очистки. Используйте ".clear all" для очистки всех сообщений или ".clear [число] для очистки заданного количества сообщений.')
+        embed = discord.Embed(title=f"Ошибка", color=0xff0000)
+        embed.add_field(name=" ", value='Не указано количество сообщений для очистки. Используйте ".clear all" для очистки всех сообщений или ".clear [число] для очистки заданного количества сообщений.')
+        await message.channel.send(embed=embed)
 async def handle_members(message):
     async for msg in message.channel.history(limit=1):
         await msg.delete()
@@ -146,12 +160,19 @@ async def handle_help(message):
         await msg.delete()
     embed = discord.Embed(title="Доступные команды сервера", color=0xffffff)
     embed.add_field(
-    name="Модерация", value=f"Блокировка: .ban @Нарушитель причина \nРазблокировка: .unban @Нарушитель причина \nУдаление: .kick @Нарушитель причина \nОтчистка: .clear количество(можно цифрой либо all для удаления всего \nСписок всех учатников: .members \nВывод информации о сервере: .serverinfo(писать только в канал статистика) \nЗаглушение участника: .mute @Нарушитель причина"f" \nРазглушение участника: .unmute @Нарушитель причина \nИнформация о участнике: .member @Участник \nАватар участника: .avatar @Участник", inline=False
-    )
-    chanel_mod = discord.utils.get(message.guild.channels, name="bot-commands")
+    name="Ранг: Модерация", value=f"Блокировка: .ban @Нарушитель причина \nРазблокировка: .unban @Нарушитель причина \nУдаление: .kick @Нарушитель причина \nОтчистка: .clear количество(можно цифрой либо all для удаления всего \nСписок всех учатников: .members \nВывод информации о сервере: .serverinfo(писать только в канал статистика) \nЗаглушение участника: .mute @Нарушитель причина"f" \nРазглушение участника: .unmute @Нарушитель причина \nИнформация о участнике: .member @Участник \nАватар участника: .avatar @Участник \n Информация о погоде: .weather Город(любой)", inline=False)
+    channel_mod = discord.utils.get(message.guild.channels, name="bot-commands")
     async for msg in chanel_mod.history(limit=1):
         await msg.delete()
-    await chanel_mod.send(embed=embed)
+    await channel_mod.send(embed=embed)
+# async def handle_member_help(message):
+#     async for msg in message.channel.history(limit=1):
+#         await msg.delete()
+#     member = message.author
+#
+#     embed = discord.Embed(title="Доступные команды сервера", color=0xffffff)
+#     embed.add_field(name="Ранг: Участник", value=f"Информация о участнике: .member @Участник \nАватар участника: .avatar @Участник \n Информация о погоде: .weather Город(любой)", inline=False)
+#     await message.channel.send(embed=embed)
 async def handle_mute(message):
     async for msg in message.channel.history(limit=1):
         await msg.delete()
@@ -171,7 +192,9 @@ async def handle_mute(message):
         except discord.errors.Forbidden:
             await message.channel.send(f'У меня нет прав для заглушения {target_user.mention}.')
     else:
-        await message.channel.send('Неверный формат команды. Используйте: .mute @игрок причина')
+        embed = discord.Embed(title=f"Ошибка", color=0xff0000)
+        embed.add_field(name=" ", value='Неверный формат команды. Используйте: .mute @игрок причина')
+        await message.channel.send(embed=embed)
 async def handle_unmute(message):
     async for msg in message.channel.history(limit=1):
         await msg.delete()
@@ -189,7 +212,9 @@ async def handle_unmute(message):
         except:
             await message.channel.send(f"У меня нет прав для разглушения {target_user.mention}.")
     else:
-        await message.channel.send('Неверный формат команды. Используйте: .unmute @игрок причина')
+        embed = discord.Embed(title=f"Ошибка", color=0xff0000)
+        embed.add_field(name=" ", value='Неверный формат команды. Используйте: .unmute @игрок причина')
+        await message.channel.send(embed=embed)
 async def handle_unban(message):
     async for msg in message.channel.history(limit=1):
         await msg.delete()
@@ -205,20 +230,27 @@ async def handle_unban(message):
         except discord.errors.Forbidden:
             await message.channel.send(f'У меня нет прав для разблокировки пользователя.')
         except discord.errors.NotFound:
-            await message.channel.send(f'Пользователь с ID {user_id} не найден.')
+            await message.channel.send(f'Введённый пользователь не заблокирован.')
     else:
-        await message.channel.send('Неверный формат команды. Используйте: .unban <@пользователь> причина')
+        embed = discord.Embed(title=f"Ошибка", color=0xff0000)
+        embed.add_field(name=" ", value='Неверный формат команды. Используйте: .unban <@пользователь> причина')
+        await message.channel.send(embed=embed)
 
 async def handle_memberinfo(message):
     async for msg in message.channel.history(limit=1):
         await msg.delete()
     parts = message.content.split(' ')
-    if len(parts) > 1:
-        # Ищем пользователя по упоминанию
-        member = message.mentions[0]
-    else:
-        # Если пользователь не указан, используем автора сообщения
-        member = message.author
+    try:
+        if len(parts) > 1:
+            # Ищем пользователя по упоминанию
+            member = message.mentions[0]
+        else:
+            # Если пользователь не указан, используем автора сообщения
+            member = message.author
+    except IndexError:
+        embed = discord.Embed(title=f"Ошибка", color=0xff0000)
+        embed.add_field(name=" ", value="Команда была неправильно использованна. Используйте .memberinfo @Участник")
+        await message.channel.send(embed=embed)
     # if isinstance(message.author, discord.Member):
     #     member = message.author
     # else:
@@ -241,17 +273,62 @@ async def handle_memberinfo(message):
     # embed.add_field(name="Статус:", value=member.status, inline=True)
 
     await message.channel.send(embed=embed)
-async def handle_avatar(message):
+async def handle_avatar(message, member):
     async for msg in message.channel.history(limit=1):
         await msg.delete()
     parts = message.content.split()
-
-    if len(parts) > 1:
-        member = message.mentions[0]
-    else:
-        member = message.author
+    try:
+        if len(parts) > 1:
+         member = message.mentions[0]
+        else:
+            member = message.author
+    except IndexError:
+        embed = discord.Embed(title=f"Ошибка", color=0xff0000)
+        embed.add_field(name=" ", value="Команда была неправильно использованна. Используйте .avatar @Участник")
+        await message.channel.send(embed=embed)
 
     embed = discord.Embed(title=f"Аватар {member.name}", color=0xffffff)
     embed.set_image(url=member.avatar.url)
     await message.channel.send(embed=embed)
+async def handle_weather(message, filtered_data):
+    # global filtered_data
+    async for msg in message.channel.history(limit=1):
+        await msg.delete()
+    api_key = 'b216418a16feaea1fc0045bd7d9df1a5'
+    city = message.content.split(' ')[1]
+    url = f'http://api.openweathermap.org/data/2.5/weather?q={city}&appid={api_key}&units=metric'
+    response = requests.get(url)
+    weather_data = response.json()
+    time = datetime.datetime.now().replace(microsecond=0)
+    try:
+        filtered_data = {
+            "X": weather_data['coord']['lon'],
+            "Y": weather_data['coord']['lat'],
+            "Temp_min": weather_data['main']['temp_min'],
+            "Temp_max": weather_data['main']['temp_max'],
+            "Temp": weather_data['main']['temp'],
+            "Feels_like": weather_data['main']['feels_like'],
+            "Country": weather_data['sys']['country'],
+            "Wind_speed": weather_data['wind']['speed']
+        }
+    except KeyError:
+        embed = discord.Embed(title=f"Ошибка", color=0xff0000)
+        embed.add_field(name=f"Произошла ошибка!", value='')
+    if response.status_code == 200:
+        try:
+            url_png = "https://tile.openweathermap.org/map/temp_new/0/0/0.png?appid=b216418a16feaea1fc0045bd7d9df1a5"
+            embed = discord.Embed(title=f"Погода в {city}", color=0x376abd)
+            embed.set_thumbnail(url=url_png)
+            embed.add_field(name=f"Город: {city}, Страна: {filtered_data['Country']}",
+                            value=f"Средняя температура: {filtered_data['Temp']}°C \nМинимальная температура: {filtered_data['Temp_min']}°C \nМаксимальная температура: {filtered_data['Temp_max']}°C \nТемпература по ощущениям: {filtered_data['Feels_like']}°C \nСкорость ветра: {filtered_data['Wind_speed']}М/С \nЗапрос выполнен: {time} \nЗапросил: {message.author.mention}")
+
+        except requests.exceptions.HTTPError:
+            embed = discord.Embed(title=f"Ошибка", color=0xff0000)
+            embed.add_field(name=f"Ошибка получения данных", value='')
+
+        except requests.exceptions.RequestException:
+            embed = discord.Embed(title=f"Ошибка", color=0xff0000)
+            embed.add_field(name=f"Ошибка получения данных", value='')
+    await message.channel.send(embed=embed)
+
 client.run('MTI0NjY1Mzg3MjQyMDY4Mzg4Ng.G1N5gg.2vL4aj8ZWornQxSTKwNgjG9aBvQ6CNL_az9tOg')
