@@ -1,6 +1,7 @@
 import discord
 import requests
 import datetime
+import os
 # from discord.ext import commands
 # import asyncio
 # import flet as ft
@@ -16,9 +17,29 @@ intents.moderation = True
 # Создайте объект Client, передав объект Intents
 client = discord.Client(intents=intents)
 
+try:
+    with open('token.txt', 'r') as f:
+        TOKEN = f.read().strip()
+except FileNotFoundError:
+    TOKEN = input("Введите ваш токен Discord: ")
+    with open('token.txt', 'w') as f:
+        f.write(TOKEN)
+
+# Читаем WEATHER_API из файла
+
+
+try:
+    with open('weather_api.txt', 'r') as f:
+        API_Weather = f.read().split()
+except FileNotFoundError:
+    API_Weather = input("Введите ваш api для погоды: ")
+    with open('weather_api.txt', 'w') as f:
+        f.write(API_Weather)
 @client.event
 async def on_ready():
     print(f'{client.user} запущен')
+    print(' ')
+    print(f'Блокировка: .ban @Нарушитель причина \nРазблокировка: .unban @Нарушитель причина \nУдаление: .kick @Нарушитель причина \nОтчистка: .clear количество(можно цифрой либо all для удаления всего \nСписок всех учатников: .members \nВывод информации о сервере: .serverinfo(писать только в канал статистика) \nЗаглушение участника: .mute @Нарушитель причина"f" \nРазглушение участника: .unmute @Нарушитель причина \nИнформация о участнике: .member @Участник \nАватар участника: .avatar @Участник \nИнформация о погоде: .weather Город(любой)')
 
 @client.event
 async def on_message(message):
@@ -44,14 +65,14 @@ async def on_message(message):
     if message.content.startswith('.members') and any(role.name == "Администратор" for role in message.author.roles):
         await handle_members(message)
 
-    if message.content.startswith('.member') and any(role.name == "Администратор" for role in message.author.roles):
+    if message.content.startswith('.info') and any(role.name == "Администратор" for role in message.author.roles):
         await handle_memberinfo(message)
 
-    if message.content.startswith('.modhelp') and any(role.name == "Администратор" for role in message.author.roles):
-        await handle_help(message)
+    if message.content.startswith('.commands') and any(role.name == "Администратор" for role in message.author.roles):
+        await handle_commands(message)
 
-    # if message.content.split('.help') and any(role.name == "Администратор" for role in message.author.roles):
-    #     await handle_member_help(message)
+    # if message.content.split('.bot'):
+    #     await handle_bot(message)
 
     if message.content.startswith('.mute') and any(role.name == 'Администратор' for role in message.author.roles):
         await handle_mute(message)
@@ -155,7 +176,7 @@ async def handle_members(message):
     embed = discord.Embed(title='Участники сервера', description='\n'.join(members_info), color=0xffffff)
     await message.channel.send(embed=embed)
 
-async def handle_help(message):
+async def handle_commands(message):
     async for msg in message.channel.history(limit=1):
         await msg.delete()
     embed = discord.Embed(title="Доступные команды сервера", color=0xffffff)
@@ -165,10 +186,7 @@ async def handle_help(message):
     async for msg in chanel_mod.history(limit=1):
         await msg.delete()
     await channel_mod.send(embed=embed)
-# async def handle_member_help(message):
-#     async for msg in message.channel.history(limit=1):
-#         await msg.delete()
-#     member = message.author
+# async def handle_bot(message):
 #
 #     embed = discord.Embed(title="Доступные команды сервера", color=0xffffff)
 #     embed.add_field(name="Ранг: Участник", value=f"Информация о участнике: .member @Участник \nАватар участника: .avatar @Участник \n Информация о погоде: .weather Город(любой)", inline=False)
@@ -237,6 +255,8 @@ async def handle_unban(message):
         await message.channel.send(embed=embed)
 
 async def handle_memberinfo(message):
+    if message.author == client.user:
+        return
     async for msg in message.channel.history(limit=1):
         await msg.delete()
     parts = message.content.split(' ')
@@ -249,7 +269,7 @@ async def handle_memberinfo(message):
             member = message.author
     except IndexError:
         embed = discord.Embed(title=f"Ошибка", color=0xff0000)
-        embed.add_field(name=" ", value="Команда была неправильно использованна. Используйте .memberinfo @Участник")
+        embed.add_field(name=" ", value="Команда была неправильно использованна. Используйте .info @Участник")
         await message.channel.send(embed=embed)
     # if isinstance(message.author, discord.Member):
     #     member = message.author
@@ -290,13 +310,21 @@ async def handle_avatar(message, member):
     embed = discord.Embed(title=f"Аватар {member.name}", color=0xffffff)
     embed.set_image(url=member.avatar.url)
     await message.channel.send(embed=embed)
-async def handle_weather(message, filtered_data):
-    # global filtered_data
+async def handle_weather(message):
+    global filtered_data
     async for msg in message.channel.history(limit=1):
         await msg.delete()
-    api_key = 'b216418a16feaea1fc0045bd7d9df1a5'
+    try:
+        with open('weather_api.txt', 'r') as f:
+            global API_Weather
+            API_Weather = f.read().strip()
+    except FileNotFoundError:
+        API_Weather = input("Введите ваш API ключ для метеорологического сервиса: ")
+        with open('weather_api.txt', 'w') as f:
+            f.write(API_Weather)
+
     city = message.content.split(' ')[1]
-    url = f'http://api.openweathermap.org/data/2.5/weather?q={city}&appid={api_key}&units=metric'
+    url = f'http://api.openweathermap.org/data/2.5/weather?q={city}&appid={API_Weather}&units=metric'
     response = requests.get(url)
     weather_data = response.json()
     time = datetime.datetime.now().replace(microsecond=0)
@@ -316,7 +344,7 @@ async def handle_weather(message, filtered_data):
         embed.add_field(name=f"Произошла ошибка!", value='')
     if response.status_code == 200:
         try:
-            url_png = "https://tile.openweathermap.org/map/temp_new/0/0/0.png?appid=b216418a16feaea1fc0045bd7d9df1a5"
+            url_png = f"https://tile.openweathermap.org/map/temp_new/0/0/0.png?appid={API_Weather}"
             embed = discord.Embed(title=f"Погода в {city}", color=0x376abd)
             embed.set_thumbnail(url=url_png)
             embed.add_field(name=f"Город: {city}, Страна: {filtered_data['Country']}",
@@ -331,4 +359,4 @@ async def handle_weather(message, filtered_data):
             embed.add_field(name=f"Ошибка получения данных", value='')
     await message.channel.send(embed=embed)
 
-client.run('MTI0NjY1Mzg3MjQyMDY4Mzg4Ng.G1N5gg.2vL4aj8ZWornQxSTKwNgjG9aBvQ6CNL_az9tOg')
+client.run(TOKEN)
