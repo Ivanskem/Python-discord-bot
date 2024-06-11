@@ -148,6 +148,8 @@ async def handle_serverinfo(message):
 
 # Функция для обработки команды .clear
 async def handle_clear(message):
+    async for msg in message.channel.history(limit=1):
+        await msg.delete()
     parts = message.content.split(' ')
     if len(parts) > 1:
         if parts[1] == "all":
@@ -181,9 +183,9 @@ async def handle_commands(message):
         await msg.delete()
     embed = discord.Embed(title="Доступные команды сервера", color=0xffffff)
     embed.add_field(
-    name="Ранг: Модерация", value=f"Блокировка: .ban @Нарушитель причина \nРазблокировка: .unban @Нарушитель причина \nУдаление: .kick @Нарушитель причина \nОтчистка: .clear количество(можно цифрой либо all для удаления всего \nСписок всех учатников: .members \nВывод информации о сервере: .serverinfo(писать только в канал статистика) \nЗаглушение участника: .mute @Нарушитель причина"f" \nРазглушение участника: .unmute @Нарушитель причина \nИнформация о участнике: .member @Участник \nАватар участника: .avatar @Участник \n Информация о погоде: .weather Город(любой)", inline=False)
+    name="Ранг: Модерация", value=f"Блокировка: .ban @Нарушитель причина \nРазблокировка: .unban @Нарушитель причина \nУдаление: .kick @Нарушитель причина \nОтчистка: .clear количество(можно цифрой либо all для удаления всего \nСписок всех учатников: .members \nВывод информации о сервере: .serverinfo(писать только в канал статистика) \nЗаглушение участника: .mute @Нарушитель причина"f" \nРазглушение участника: .unmute @Нарушитель причина \nИнформация о участнике: .info @Участник \nАватар участника: .avatar @Участник \nИнформация о погоде: .weather Город(любой) \nВывод этого сообщения: .commands(в канал #bot-commands, не писать)", inline=False)
     channel_mod = discord.utils.get(message.guild.channels, name="bot-commands")
-    async for msg in chanel_mod.history(limit=1):
+    async for msg in channel_mod.history(limit=1):
         await msg.delete()
     await channel_mod.send(embed=embed)
 # async def handle_bot(message):
@@ -293,7 +295,7 @@ async def handle_memberinfo(message):
     # embed.add_field(name="Статус:", value=member.status, inline=True)
 
     await message.channel.send(embed=embed)
-async def handle_avatar(message, member):
+async def handle_avatar(message):
     async for msg in message.channel.history(limit=1):
         await msg.delete()
     parts = message.content.split()
