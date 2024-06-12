@@ -158,7 +158,7 @@ async def handle_clear(message):
         else:
             try:
                 count = int(parts[1])
-                await message.channel.purge(limit=count + 1)
+                await message.channel.purge(limit=count)
                 await message.author.send(f'Удалено {count} сообщений.')
             except ValueError:
                 await message.author.send('Неверный формат. Используйте ".clear all" для очистки всех сообщений или ".clear [число] для очистки заданного количества сообщений.')
