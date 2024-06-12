@@ -47,9 +47,6 @@ async def on_message(message):
         return
 
     # Обработка команд
-    if message.content.startswith('.hello'):
-        await message.channel.send(f'Привет, {message.author.mention}!')
-
     if message.content.startswith('.ban') and any(role.name == "Администратор" for role in message.author.roles):
         await handle_ban(message)
 
@@ -65,7 +62,7 @@ async def on_message(message):
     if message.content.startswith('.members') and any(role.name == "Администратор" for role in message.author.roles):
         await handle_members(message)
 
-    if message.content.startswith('.info') and any(role.name == "Администратор" for role in message.author.roles):
+    if message.content.startswith('.info'):
         await handle_memberinfo(message)
 
     if message.content.startswith('.commands') and any(role.name == "Администратор" for role in message.author.roles):
@@ -83,10 +80,10 @@ async def on_message(message):
     if message.content.startswith('.unban') and any(role.name == 'Администратор' for role in message.author.roles):
         await handle_unban(message)
 
-    if message.content.startswith('.avatar') and any(role.name == 'Администратор' for role in message.author.roles):
+    if message.content.startswith('.avatar'):
         await handle_avatar(message)
 
-    if message.content.startswith('.weather') and any(role.name == 'Администратор' for role in message.author.roles):
+    if message.content.startswith('.weather'):
         await handle_weather(message)
 
 # Функция для обработки команды .ban
