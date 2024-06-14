@@ -15,7 +15,7 @@ intents.bans = True
 intents.moderation = True
 
 # Создайте объект Client, передав объект Intents
-client = discord.Client(intents=intents)
+client_discord = discord.Client(intents=intents)
 
 try:
     with open('token.txt', 'r') as f:
@@ -35,15 +35,15 @@ except FileNotFoundError:
     API_Weather = input("Введите ваш api для погоды: ")
     with open('weather_api.txt', 'w') as f:
         f.write(API_Weather)
-@client.event
+@client_discord.event
 async def on_ready():
-    print(f'{client.user} запущен')
+    print(f'{client_discord.user} запущен')
     print(' ')
     print(f'Блокировка: .ban @Нарушитель причина \nРазблокировка: .unban @Нарушитель причина \nУдаление: .kick @Нарушитель причина \nОтчистка: .clear количество(можно цифрой либо all для удаления всего \nСписок всех учатников: .members \nВывод информации о сервере: .serverinfo(писать только в канал статистика) \nЗаглушение участника: .mute @Нарушитель причина"f" \nРазглушение участника: .unmute @Нарушитель причина \nИнформация о участнике: .member @Участник \nАватар участника: .avatar @Участник \nИнформация о погоде: .weather Город(любой)')
 
-@client.event
+@client_discord.event
 async def on_message(message):
-    if message.author == client.user:
+    if message.author == client_discord.user:
         return
 
     # Обработка команд
@@ -85,6 +85,8 @@ async def on_message(message):
 
     if message.content.startswith('.weather'):
         await handle_weather(message)
+
+
 
 # Функция для обработки команды .ban
 async def handle_ban(message):
@@ -130,9 +132,30 @@ async def handle_kick(message):
 async def handle_serverinfo(message):
     async for msg in message.channel.history(limit=1):
         await msg.delete()
-    embed = discord.Embed(title="Информация о сервере", color=discord.Color.blue())
-    embed.add_field(name="Участники", value=f"Всего участников: {len(message.guild.members)}", inline=False)
-    embed.add_field(name="Каналы", value=f"Текстовых каналов: {len(message.guild.text_channels)}\nГолосовых каналов: {len(message.guild.voice_channels)}\nКатегорий: {len(message.guild.categories)}", inline=False)
+    guild = discord.utils.get(client_discord.guilds, id=1171462603260821585)
+    bots = sum(1 for member in guild.members if member.bot)
+    count_messages = 0
+    for channel in guild.text_channels:
+        messages = []
+        async for message in channel.history(limit=None):
+            messages.append(message)
+        count_messages += len(messages)
+    admin_role = discord.utils.get(guild.roles, name="Администратор")
+    admin_count = len([member for member in guild.members if admin_role in member.roles])
+    verify_role = discord.utils.get(guild.roles, name="Верифицирован✅️")
+    verify_count = len([member for member in guild.members if verify_role in member.roles])
+    server_creation_date_full = f'{guild.created_at}'
+    server_creation_date = server_creation_date_full[:19]
+    time = datetime.datetime.now().replace(microsecond=0)
+
+    embed = discord.Embed(title="Информация о сервере", color=0xffffff)
+    embed.set_thumbnail(url=guild.icon.url)
+    embed.add_field(name="Дата создания: ", value=server_creation_date, inline=False)
+    embed.add_field(name="Создан: ", value=guild.owner.mention, inline=False)
+    embed.add_field(name="Участники", value=f"Всего участников: {len(message.guild.members)} \nБотов: {str(bots)} \nАдминистраторов: {admin_count} \nВерифицировались: {verify_count}", inline=False)
+    embed.add_field(name="Каналы", value=f"Текстовых каналов: {len(message.guild.text_channels)}\nГолосовых каналов: {len(message.guild.voice_channels)}\nКатегорий: {len(message.guild.categories)} \nТекстовых сообщений: {count_messages} ", inline=False)
+    embed.add_field(name="Ссылки", value=f"📲Telegram-канал: https://t.me/UnicUm_Colabarations \n👾Discord-сервер: https://discord.gg/hW39qmju \n \nВызвано: {time}")
+
     channel_stat = discord.utils.get(message.guild.channels, name="статистика")
     if channel_stat:
         async for msg in channel_stat.history(limit=1):
@@ -171,7 +194,7 @@ async def handle_clear(message):
 async def handle_members(message):
     async for msg in message.channel.history(limit=1):
         await msg.delete()
-    members_info = [f"{member.mention}-{member.name} (ID: {member.id})" for member in message.guild.members]
+    members_info = [f"{member.mention}-{member.name} (ID: {member.id}) (Высшая роль: {member.top_role})" for member in message.guild.members]
     embed = discord.Embed(title='Участники сервера', description='\n'.join(members_info), color=0xffffff)
     await message.channel.send(embed=embed)
 
@@ -357,5 +380,4 @@ async def handle_weather(message):
             embed = discord.Embed(title=f"Ошибка", color=0xff0000)
             embed.add_field(name=f"Ошибка получения данных", value='')
     await message.channel.send(embed=embed)
-
-client.run(TOKEN)
+client_discord.run(TOKEN)
