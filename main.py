@@ -399,7 +399,8 @@ async def handle_weather(message):
             "Feels_like": weather_data['main']['feels_like'],
             "Country": weather_data['sys']['country'],
             "Wind_speed": weather_data['wind']['speed'],
-            "Humidity": weather_data['main']['humidity']
+            "Humidity": weather_data['main']['humidity'],
+            "City_id": weather_data['id']
         }
     except KeyError:
         embed = discord.Embed(title=f"Ошибка", color=0xff0000)
@@ -410,7 +411,7 @@ async def handle_weather(message):
             embed = discord.Embed(title=f"Погода в {city}", color=0x376abd)
             embed.set_thumbnail(url=url_png)
             embed.add_field(name=f"Город: {city}, Страна: {filtered_data['Country']}",
-                            value=f"Средняя температура: {filtered_data['Temp']}°C \nМинимальная температура: {filtered_data['Temp_min']}°C \nМаксимальная температура: {filtered_data['Temp_max']}°C \nТемпература по ощущениям: {filtered_data['Feels_like']}°C \nСкорость ветра: {filtered_data['Wind_speed']}М/С \nВлажность: {filtered_data['Humidity']}% \nЗапрос выполнен: {time} \nЗапросил: {message.author.mention} \n Источник: https://openweathermap.org/")
+                            value=f"Средняя температура: {filtered_data['Temp']}°C \nМинимальная температура: {filtered_data['Temp_min']}°C \nМаксимальная температура: {filtered_data['Temp_max']}°C \nТемпература по ощущениям: {filtered_data['Feels_like']}°C \nСкорость ветра: {filtered_data['Wind_speed']}М/С \nВлажность: {filtered_data['Humidity']}% \nЗапрос выполнен: {time} \nЗапросил: {message.author.mention} \n Источник: https://openweathermap.org/city/{filtered_data['City_id']}")
 
         except requests.exceptions.HTTPError:
             embed = discord.Embed(title=f"Ошибка", color=0xff0000)
