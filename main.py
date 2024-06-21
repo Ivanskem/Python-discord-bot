@@ -152,7 +152,7 @@ async def handle_serverinfo(message):
     async for msg in message.channel.history(limit=1):
         await msg.delete()
     if discord.utils.get(message.author.roles, name="Администратор") is not None:
-        guild = discord.utils.get(client_discord.guilds, id=123456789) #enter you're guild id
+        guild = discord.utils.get(client_discord.guilds, id=1171462603260821585)
         bots = sum(1 for member in guild.members if member.bot)
         count_messages = 0
         for channel in guild.text_channels:
@@ -197,18 +197,16 @@ async def handle_clear(message):
             if parts[1] == "all":
                 try:
                     await message.channel.purge(limit=None)
-                    await message.author.send('Сообщения успешно очищены.')
                 except discord.errors.Forbidden:
-                    await message.author.send('У меня нет прав для очистки сообщений.')
+                    await message.channel.send('У меня нет прав для очистки сообщений.')
             else:
                 try:
                     count = int(parts[1])
                     await message.channel.purge(limit=count)
-                    await message.author.send(f'Удалено {count} сообщений.')
                 except ValueError:
-                    await message.author.send('Неверный формат. Используйте ".clear all" для очистки всех сообщений или ".clear [число] для очистки заданного количества сообщений.')
+                    await message.channel.send('Неверный формат. Используйте ".clear all" для очистки всех сообщений или ".clear [число] для очистки заданного количества сообщений.')
                 except discord.errors.Forbidden:
-                    await message.author.send('У меня нет прав для очистки сообщений.')
+                    await message.channel.send('У меня нет прав для очистки сообщений.')
         else:
             embed = discord.Embed(title=f"Ошибка", color=0xff0000)
             embed.add_field(name=" ", value='Не указано количество сообщений для очистки. Используйте ".clear all" для очистки всех сообщений или ".clear [число] для очистки заданного количества сообщений.')
@@ -338,19 +336,25 @@ async def handle_memberinfo(message):
     #     await message.channel.send(
     #         "Извини, я не могу получить информацию о пользователе, который не является членом сервера.")
     #     return
-    # role_list = [role.name for role in member.roles]
-    # role_string = ", ".join(role_list)
-    # discriminator = member.discriminator
-    # if discriminator == 0:
-    #     discriminator = None
+    excepted_roles = ["@everyone", "Member"]
+    role_count = len([role.name for role in member.roles if role.name not in excepted_roles])
+    roles = member.roles
+    role_names = [role.name for role in roles if role.name not in excepted_roles]
+    role_list = ' '.join(role_names)
+    discriminator = member.discriminator
+    if discriminator == 0:
+         discriminator = None
     embed = discord.Embed(title=f"Информация о {member.name}", color=0xffffff)
     embed.set_thumbnail(url=member.avatar.url)
     embed.add_field(name="Никнейм:", value=member.name, inline=True)
     embed.add_field(name="Профиль:", value=member.mention, inline=True)
-    # embed.add_field(name="Полное имя:", value=discriminator, inline=True)
+    embed.add_field(name="Полное имя:", value=f'{member.name}#{discriminator}', inline=True)
     embed.add_field(name="ID:", value=member.id, inline=True)
     embed.add_field(name="Дата присоеденения:", value=member.joined_at.strftime("%Y-%m-%d %H-%M"), inline=True)
-    embed.add_field(name="Роли:", value=member.top_role.name, inline=True)
+    embed.add_field(name="Роль:", value=member.top_role.name, inline=True)
+    embed.add_field(name="Роли:", value=role_list)
+    embed.add_field(name='Количество ролей:', value=role_count)
+
     # embed.add_field(name="Статус:", value=member.status, inline=True)
 
     await message.channel.send(embed=embed)
