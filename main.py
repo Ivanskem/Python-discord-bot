@@ -152,7 +152,7 @@ async def handle_serverinfo(message):
     async for msg in message.channel.history(limit=1):
         await msg.delete()
     if discord.utils.get(message.author.roles, name="Администратор") is not None:
-        guild = discord.utils.get(client_discord.guilds, id=1171462603260821585)
+        guild = discord.utils.get(client_discord.guilds, id=123456789) #enter you're guild id
         bots = sum(1 for member in guild.members if member.bot)
         count_messages = 0
         for channel in guild.text_channels:
