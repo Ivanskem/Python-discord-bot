@@ -53,7 +53,7 @@ reason_emodji = f"<:customemoji:{reason_emodji_id}>"
 telegram_channels_link = 'Your link to telegram chat/channel'
 discord_server_link = 'Your link to discord server'
 servername_to_footer = 'enter name of server'
-servername_database 'enter name of server'
+servername_database = 'enter name of server'
 try:
     with open('Openai_API.txt', 'r') as f:
         openai.api_key = f.read().strip()
@@ -246,7 +246,7 @@ async def ban(interaction: Interaction, member: nextcord.Member,
             time = datetime.datetime.now().replace(microsecond=0)
             embed = nextcord.Embed(title="Информация о блокировке", color=nextcord.Color.dark_purple())
             embed.add_field(name=' ', value=f'Администратор: {interaction.user.mention}\n{reason_emodji} Причина: {reason}\nЗаблокированный: {member.mention}\n')
-            embed.set_footer(text=f' •{servername_to_footer} Moderation | {datetime.datetime.now().replace(microsecond=0)}',
+            embed.set_footer(text=f'• {servername_to_footer} Moderation | {datetime.datetime.now().replace(microsecond=0)}',
                              icon_url=interaction.guild.icon.url)
             await interaction.response.send_message(embed=embed)
         except nextcord.Forbidden:
@@ -279,7 +279,7 @@ async def warn_command(interaction: Interaction, member: nextcord.Member,
             except sqlite3.Error as e:
                 await interaction.response.send_message(f'Произошла ошибка: {e}', ephemeral=True)
             try:
-                embed = nextcord.Embed(title='Ваша информация', color=nextcord.Color.dark_purple())
+                embed = nextcord.Embed(title=f'Информация о {member.name}', color=nextcord.Color.dark_purple())
                 embed.add_field(name=' ', value=f'Количество предупреждений: {warn_count[0]}\n'
                                                 f'Последнее предупреждение: {warn_last[0]}')
                 embed.set_footer(text=f'•{servername_to_footer} warn | {datetime.datetime.now().replace(microsecond=0)}',
@@ -318,8 +318,8 @@ async def warn_command(interaction: Interaction, member: nextcord.Member,
             embed.set_footer(text=f'• {servername_to_footer} Warn | {datetime.datetime.now().replace(microsecond=0)}',
                              icon_url=interaction.guild.icon.url)
             await interaction.response.send_message(embed=embed)
-        else:
-            await interaction.response.send_message(f'У вас недостаточно прав для использования этой команды!', ephemeral=True)
+    else:
+        await interaction.response.send_message(f'У вас недостаточно прав для использования этой команды!', ephemeral=True)
 @client_discord.slash_command(name='kick', description='Удаляет участника, участник сможет зайти повторно')
 async def kick(interaction: Interaction, member: nextcord.Member, reason: str = SlashOption(description='Причина удаления', default="Причина не указана")):
     logger = logging.getLogger(__name__)
@@ -612,17 +612,26 @@ async def unmute(interaction: Interaction, member: nextcord.Member, reason: str 
                                                 ephemeral=True)
 
 @client_discord.slash_command(name='unban', description='Снимает блокировку с пользователя')
-async def unban(interaction: Interaction, user_id: str,
-                reason: str = nextcord.SlashOption(description='Причина блокировки', default='Причина не указана')):
+async def unban(interaction: Interaction, user_id: str, reason: str = SlashOption(description='Причина блокировки', default='Причина не указана')):
     logger = logging.getLogger(__name__)
     logger.info(f'Пользователь {interaction.user.mention} вызвал команду для снятия блокировки с участника')
 
     if nextcord.utils.get(interaction.user.roles, name='Администратор'):
         try:
-            user = await client_discord.fetch_user(user_id)
-            member = await interaction.guild.fetch_member(user_id)
+            user = await client_discord.fetch_user(int(user_id))
             await interaction.guild.unban(user, reason=reason)
-            logger.info(f'Пользователь {user.mention} разбанен {interaction.user.mention}. Причина: {reason}')
+            time = datetime.datetime.now().replace(microsecond=0)
+            embed = nextcord.Embed(title='Информация о разблокировке', color=nextcord.Color.dark_purple())
+            embed.add_field(name=' ', value=f'Администратор: {interaction.user.mention}\n'
+                                            f'{reason_emodji} Причина: {reason}\n'
+                                            f'Разблокированный: {user.mention}\n')
+            embed.set_footer(
+                text=f' •{servername_to_footer} Moderation | {datetime.datetime.now().replace(microsecond=0)}',
+                icon_url=interaction.guild.icon.url)
+
+            if reason == 'Причина не указана':
+                await warn(interaction, interaction.guild.id, interaction.user.id,
+                           interaction.user.name, interaction.guild)  # Используйте warn здесь
 
             try:
                 database_location = sqlite3.connect(f'{servername_database}_discord.db')
@@ -631,21 +640,13 @@ async def unban(interaction: Interaction, user_id: str,
                     INSERT INTO mod_actions (action_type, guild_id, moderator_name, moderator_id, target_user_name, target_user_id, reason, action_time)
                     VALUES (?, ?, ?, ?, ?, ?, ?, ?)
                 """, ('Unban', interaction.guild.id, interaction.user.name, interaction.user.id,
-                      member.name, member.id, reason, datetime.datetime.now()))
+                      user.name, user.id, reason, datetime.datetime.now()))
                 database_location.commit()
-            except sqlite3.Error as e:
+            except Exception as e:
                 logger.error(f'Something went wrong! Error: {e}')
             finally:
                 database_location.close()
-            if reason in ['Причина не указана']:
-                await warn(interaction, interaction.guild.id, interaction.user.id,
-                           interaction.user.name, interaction.guild)
-            time = datetime.datetime.now().replace(microsecond=0)
-            embed = nextcord.Embed(title='Информация о разблокировке', color=nextcord.Color.blue())
-            embed.add_field(name=' ',
-                            value=f'Администратор: {interaction.user.mention} \n{reason_emodji} Причина: {reason}\nРазблокированный: {user.mention}')
-            embed.set_footer(text=f' •{servername_to_footer} Moderation | {datetime.datetime.now().replace(microsecond=0)}',
-                             icon_url=interaction.guild.icon.url)
+
             await interaction.response.send_message(embed=embed)
         except nextcord.errors.Forbidden:
             logger.error(f"Произошла ошибка: discord.errors.Forbidden")
@@ -654,9 +655,7 @@ async def unban(interaction: Interaction, user_id: str,
             logger.error(f'Произошла ошибка: discord.errors.NotFound')
             await interaction.response.send_message('Участник не найден в списке заблокированных', ephemeral=True)
     else:
-        await interaction.response.send_message('У вас не достаточно прав для использования данной команды',
-                                                ephemeral=True)
-
+        await interaction.response.send_message('У вас не достаточно прав для использования данной команды', ephemeral=True)
 @client_discord.slash_command(name='info', description='Отправляет информацию о участнике')
 async def info(interaction: Interaction, member: nextcord.Member,
                hidden: str = SlashOption(
