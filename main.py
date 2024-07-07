@@ -53,6 +53,7 @@ reason_emodji = f"<:customemoji:{reason_emodji_id}>"
 telegram_channels_link = 'Your link to telegram chat/channel'
 discord_server_link = 'Your link to discord server'
 servername_to_footer = 'enter name of server'
+servername_database 'enter name of server'
 try:
     with open('Openai_API.txt', 'r') as f:
         openai.api_key = f.read().strip()
