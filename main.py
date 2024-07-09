@@ -14,6 +14,7 @@ import sys
 import shutil
 from win10toast import ToastNotifier
 import sqlite3
+from apscheduler.schedulers.asyncio import AsyncIOScheduler
 # import flet as ft
 intents = nextcord.Intents.default()
 intents.message_content = True
@@ -26,6 +27,8 @@ logging.basicConfig(filename="log.log",
                     format='%(asctime)s - %(levelname)s - %(message)s')
 
 client_discord = nextcord.Client(intents=intents)
+scheduler = AsyncIOScheduler()
+
 API_Weather = 'get your api key on openweathermap.org/api'
 Forbidden_words = ['enter you list of forbidden words']
 guild_owner_emodji_id = 'add id of your emodji'
@@ -54,6 +57,7 @@ telegram_channels_link = 'Your link to telegram chat/channel'
 discord_server_link = 'Your link to discord server'
 servername_to_footer = 'enter name of server'
 servername_database = 'enter name of server'
+channel_stat = 'enter your statistic channel id'
 try:
     with open('Openai_API.txt', 'r') as f:
         openai.api_key = f.read().strip()
@@ -74,6 +78,59 @@ def win_notification(title, message):
     toaster = ToastNotifier()
     toaster.show_toast(title, message, duration=0, threaded=True)
 
+async def send_server_info():
+    logger = logging.getLogger(__name__)
+    logger.info(f'Отправка информации о сервере | {datetime.datetime.now().replace(microsecond=0)}')
+    channel = client_discord.get_channel(channel_stat)
+    if channel:
+        guild = channel.guild
+    else:
+        logger.error(f'Канал с айди {channel} не найден!')
+    async for msg in channel.history(limit=1):
+        await msg.delete()
+    bots = sum(1 for member in guild.members if member.bot)
+    total_members = guild.member_count
+    without_bot = total_members - bots
+    time = datetime.datetime.now().replace(microsecond=0)
+
+    server_owner = guild.owner.mention
+    if server_owner == None:
+        server_owner = 'Не указано'
+    verification_level = guild.verification_level
+    if verification_level == guild.verification_level.low:
+        verification_level_show = 'Низкий'
+    elif verification_level == guild.verification_level.medium:
+        verification_level_show = 'Средний'
+    elif verification_level == guild.verification_level.high:
+        verification_level_show = 'Высокий'
+    else:
+        verification_level_show = 'Нет'
+    created_at = guild.created_at
+    now = datetime.datetime.now(nextcord.utils.utcnow().tzinfo)
+    text_channels = len(guild.text_channels)
+    voice_channels = len(guild.voice_channels)
+    categories = len(guild.categories)
+
+    embed = nextcord.Embed(title=guild.name, color=0x6fa8dc)
+    embed.set_thumbnail(url=guild.icon.url)
+    embed.add_field(name='Основное', value=f'{guild_owner_emodji} Владелец: {server_owner}\n'
+                                           f'{verification_level_emodji} Уровень проверки: {verification_level_show}\n'
+                                           f'{created_since_emodji} Создан: <t:{int(created_at.timestamp())}:F>\n(<t:{int(created_at.timestamp())}:R>)\n'
+                                           f'{all_categories_emodji} Всего {text_channels + voice_channels + categories} каналов\n'
+                                           f'{stack_emodji} {all_categories_emodji} Текстовые каналы: {text_channels}\n'
+                                           f'{stack_emodji} {voice_emodji} Голосовые каналы: {voice_channels}\n'
+                                           f'{slide_emodji} {categories_emodji} Категории: {categories}\n')
+    embed.add_field(name='Пользователи', value=f'{members_emodji} Всего {total_members} участников\n'
+                                               f'{stack_emodji} Ботов: {bots}\n'
+                                               f'{slide_emodji} Участников: {without_bot}\n')
+    boost_level = guild.premium_tier
+    embed.add_field(name='Бусты',
+                    value=f'{boost_emodji} Уровень: {boost_level} (бустов - {guild.premium_subscription_count})\n')
+    embed.add_field(name='Ссылки',
+                    value=f'📲Telegram-канал: {telegram_channels_link} \n👾Discord-сервер: {discord_server_link}\n')
+    embed.set_footer(text=f'• {servername_to_footer} Info {time}',
+                     icon_url=guild.icon.url)
+    await channel.send(embed=embed)
 async def warn(interaction, guild_id, user_id, user_name, guild):
     database_location = sqlite3.connect(f'{servername_database}_discord.db')
     cursor = database_location.cursor()
@@ -105,6 +162,8 @@ async def on_ready():
     print(' ')
     message = f"Блокировка: /ban Нарушитель причина \nРазблокировка: /unban Нарушитель причина \nУдаление: /kick Нарушитель причина \nОтчистка: /clear количество(можно любым количеством либо 0 для удаления всего) \nСписок всех учатников: /members \nВывод информации о сервере: /serverinfo \nЗаглушение участника: /mute Нарушитель причина"f" \nРазглушение участника: /unmute Нарушитель причина \nИнформация о участнике: /info Участник \nАватар участника: /avatar Участник \nИнформация о погоде: /weather Город(любой) \nВывод этого сообщения: /commands (в канал #bot-commands, не писать) \nОтправить сообщение: /say (сообщение)"
     print(message)
+    scheduler.add_job(send_server_info, 'interval', days=7)
+    scheduler.start()
     database_location = sqlite3.connect(f'{servername_database}_discord.db')
     cursor = database_location.cursor()
     cursor.execute('''
@@ -176,7 +235,7 @@ async def on_member_join(member):
     embed_user.add_field(name='Информация', value=f'Всю необходимую информацию вы можете найти в канале "информация".')
     embed_user.set_footer(text=f'{servername_database} Welcome | {datetime.datetime.now().replace(microsecond=0)}')
 
-    channel = nextcord.utils.get(member.guild.channels, name='admin')
+    channel = nextcord.utils.get(member.guild.channels, name='добро-пожаловать')
     if channel:
         await channel.send(embed=embed_server)
     else:
@@ -723,9 +782,8 @@ async def log(interaction: Interaction,
               ),
               target: str = SlashOption(
                   name="target",
-                  description='Выберите файл: current или archive',
-                  choices=['current', 'archive'],
-                  default='None'
+                  description='Выберите откуда будет загрузка: current, archive или любое другое название файла',
+                  default='current'
               )
 ):
     logger = logging.getLogger(__name__)
@@ -754,19 +812,31 @@ async def log(interaction: Interaction,
                     await interaction.response.send_message(f'Действующий файл логов удалён', ephemeral=True)
                     win_notification('User clear current log', f'{interaction.user.name} cleared main logging file\nTime: {datetime.datetime.now().replace(microsecond=0)}')
         if content.lower() in ['download', 'Download', 'dowload', 'Dowload']:
-            if target in ['Current', 'current']:
-                await interaction.response.send_message(file=nextcord.File('log.log'), ephemeral=True)
-                win_notification('User downloaded log',
-                                 f'{interaction.user.name} downloaded current log file\nTime: {datetime.datetime.now().replace(microsecond=0)}')
-            elif target in ['Archive', 'archive']:
-                archive_logs_dir = os.path.join(os.getcwd(), 'archive_logs')
-                files = os.listdir(archive_logs_dir)
-                await interaction.response.defer(ephemeral=True)
-                for file in files:
-                    file_path = os.path.join(archive_logs_dir, file)
-                    await interaction.followup.send(file=nextcord.File(file_path), ephemeral=True)
-                win_notification('User downloaded log',
-                                 f'{interaction.user.name} downloaded archive log files\nTime: {datetime.datetime.now().replace(microsecond=0)}')
+            if content == 'download':
+                if target == 'current':
+                    logger.info(f'Пользователь {interaction.user.name} запросил базу скачивание логов!')
+                    await interaction.response.send_message(file=nextcord.File(f'log.log'),
+                                                            ephemeral=True)
+                    win_notification('User downloaded log',
+                                     f'Current log file downloaded by {interaction.user.name}')
+                elif target in ['Archive', 'archive']:
+                    archive_logs_dir = os.path.join(os.getcwd(), 'archive_logs')
+                    files = os.listdir(archive_logs_dir)
+                    await interaction.response.defer(ephemeral=True)
+                    for file in files:
+                        file_path = os.path.join(archive_logs_dir, file)
+                        await interaction.followup.send(file=nextcord.File(file_path), ephemeral=True)
+                    win_notification('User downloaded log',
+                                     f'{interaction.user.name} downloaded archive log files\nTime: {datetime.datetime.now().replace(microsecond=0)}')
+                else:
+                    logger.info(f'Пользователь {interaction.user.name} запросил базу скачивание логов!')
+                    try:
+                        await interaction.response.send_message(file=nextcord.File(f'archive_logs\\{target}'),
+                                                                ephemeral=True)
+                    except FileNotFoundError:
+                        await interaction.response.send_message(f'Файл не найден', ephemeral=True)
+                    win_notification('User downloaded log', f'{target} downloaded by {interaction.user.name}')
+
             else:
                 await interaction.response.send_message('Вы ввели не верное действие со скачиванием, попробуйте снова', ephemeral=True)
         elif content.lower() in ['save', 'Save']:
@@ -833,7 +903,8 @@ async def log(interaction: Interaction,
                     icon_url=interaction.guild.icon.url)
             await interaction.response.send_message(embed=embed, ephemeral=True)
     else:
-        await interaction.response.send_message('У вас недостаточно прав для использования этой команды', ephemeral=True)
+        await interaction.response.send_message('У вас недостаточно прав для использования этой команды',
+                                                ephemeral=True)
 @client_discord.slash_command(name='weather', description='Отправляет погоду в указанном городе')
 async def weather(interaction: Interaction, city: str = SlashOption(description='Укажите город')):
     logger = logging.getLogger(__name__)
@@ -891,19 +962,24 @@ async def weather(interaction: Interaction, city: str = SlashOption(description=
             logger.error(f"Ошибка HTTP: {e}")
             embed = nextcord.Embed(title=f"Ошибка", color=0xff0000)
             embed.add_field(name=f"Ошибка получения данных", value='Сервер недоступен')
-            embed.set_footer(text=f'{servername_to_footer} Weather')
+            embed.set_footer(
+                text=f'• {servername_to_footer} Weather | {datetime.datetime.now().replace(microsecond=0)}',
+                icon_url=interaction.guild.icon.url)
             await interaction.response.send_message(embed=embed, ephemeral=True)
         except requests.exceptions.RequestException as e:
             logger.error(f"Ошибка запроса: {e}")
             embed = nextcord.Embed(title=f"Ошибка", color=0xff0000)
             embed.add_field(name=f"Ошибка получения данных", value='Ошибка с запросом попробуйте снова')
-            embed.set_footer(text=f'{servername_to_footer} Weather')
+            embed.set_footer(
+                text=f'• {servername_to_footer} Weather | {datetime.datetime.now().replace(microsecond=0)}',
+                icon_url=interaction.guild.icon.url)
             await interaction.response.send_message(embed=embed, ephemeral=True)
     else:
         logger.error(f"Ошибка: Не удалось получить данные погоды. Код ответа: {response.status_code}")
         embed = nextcord.Embed(title=f"Ошибка", color=0xff0000)
         embed.add_field(name=f"Ошибка получения данных", value='')
-        embed.set_footer(text=f'{servername_to_footer} Weather')
+        embed.set_footer(text=f'• {servername_to_footer} Weather | {datetime.datetime.now().replace(microsecond=0)}',
+                         icon_url=interaction.guild.icon.url)
         await interaction.response.send_message(embed=embed, ephemeral=True)
 
 
