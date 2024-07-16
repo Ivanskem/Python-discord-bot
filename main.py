@@ -6,8 +6,9 @@ import os
 import logging
 import openai
 from nextcord.ext import commands, tasks
-from nextcord import Interaction, SlashOption
+from nextcord import Interaction, SlashOption, ButtonStyle
 from nextcord.errors import Forbidden
+from nextcord.ui import Button, View, UserSelect
 import asyncio
 import time
 import sys
@@ -43,21 +44,35 @@ categories_emodji_id = 'add id of your emodji'
 categories_emodji = f"<:customemoji:{categories_emodji_id}>"
 members_emodji_id = 'add id of your emodji'
 members_emodji = f"<:customemoji:{members_emodji_id}>"
+member_emodji_id = 'add id of your emodji'
+member_emodji = f"<:customemoji:{member_emodji_id}>"
 boost_emodji_id = 'add id of your emodji'
 boost_emodji = f"<:customemoji:{boost_emodji_id}>"
 voice_emodji_id = 'add id of your emodji'
 voice_emodji = f"<:customemoji:{voice_emodji_id}>"
-stack_emodji_id = 'add id of your emodji'
-stack_emodji = f"<:customemoji:{stack_emodji_id}>"
-slide_emodji_id = 'add id of your emodji'
-slide_emodji = f"<:customemoji:{slide_emodji_id}>"
 reason_emodji_id = 'add id of your emodji'
 reason_emodji = f"<:customemoji:{reason_emodji_id}>"
 telegram_channels_link = 'Your link to telegram chat/channel'
 discord_server_link = 'Your link to discord server'
 servername_to_footer = 'enter name of server'
 servername_database = 'enter name of server'
-channel_stat = 'enter your statistic channel id'
+staff_emodji_id = 'add id of your emodji'
+staff_emodji = f"<:customemoji:{staff_emodji_id}>"
+warn_emodji_id = 'add id of your emodji'
+warn_emodji = f"<:customemoji:{warn_emodji_id}>"
+time_emodji_id = 'add id of your emodji'
+time_emodji = f"<:customemoji:{time_emodji_id}>"
+text_emodji_id = 'add id of your emodji'
+text_emodji = f"<:customemoji:{text_emodji_id}>"
+slash_emodji_id = 'add id of your emodji'
+slash_emodji = f"<:customemoji:{slash_emodji_id}>"
+bot_emodji_id = 'add id of your emodji'
+bot_emodji = f"<:customemoji:{bot_emodji_id}>"
+telegram_emodji_id = 'add id of your emodji'
+telegram_emodji = f"<:customemoji:{telegram_emodji_id}>"
+discord_emodji_id = 'add id of your emodji'
+discord_emodji = f"<:customemoji:{discord_emodji_id}>"
+
 try:
     with open('Openai_API.txt', 'r') as f:
         openai.api_key = f.read().strip()
@@ -106,7 +121,6 @@ async def send_server_info():
     else:
         verification_level_show = 'Нет'
     created_at = guild.created_at
-    now = datetime.datetime.now(nextcord.utils.utcnow().tzinfo)
     text_channels = len(guild.text_channels)
     voice_channels = len(guild.voice_channels)
     categories = len(guild.categories)
@@ -116,20 +130,20 @@ async def send_server_info():
     embed.add_field(name='Основное', value=f'{guild_owner_emodji} Владелец: {server_owner}\n'
                                            f'{verification_level_emodji} Уровень проверки: {verification_level_show}\n'
                                            f'{created_since_emodji} Создан: <t:{int(created_at.timestamp())}:F>\n(<t:{int(created_at.timestamp())}:R>)\n'
-                                           f'{all_categories_emodji} Всего {text_channels + voice_channels + categories} каналов\n'
-                                           f'{stack_emodji} {all_categories_emodji} Текстовые каналы: {text_channels}\n'
-                                           f'{stack_emodji} {voice_emodji} Голосовые каналы: {voice_channels}\n'
-                                           f'{slide_emodji} {categories_emodji} Категории: {categories}\n')
+                                           f'{slash_emodji} Всего {text_channels + voice_channels + categories} каналов\n'
+                                           f'{text_emodji} Текстовые каналы: {text_channels}\n'
+                                           f'{voice_emodji} Голосовые каналы: {voice_channels}\n'
+                                           f'{categories_emodji} Категории: {categories}\n')
     embed.add_field(name='Пользователи', value=f'{members_emodji} Всего {total_members} участников\n'
-                                               f'{stack_emodji} Ботов: {bots}\n'
-                                               f'{slide_emodji} Участников: {without_bot}\n')
+                                               f'{bot_emodji} Ботов: {bots}\n'
+                                               f'{member_emodji} Участников: {without_bot}\n')
     boost_level = guild.premium_tier
     embed.add_field(name='Бусты',
                     value=f'{boost_emodji} Уровень: {boost_level} (бустов - {guild.premium_subscription_count})\n')
-    embed.add_field(name='Ссылки',
-                    value=f'📲Telegram-канал: {telegram_channels_link} \n👾Discord-сервер: {discord_server_link}\n')
-    embed.set_footer(text=f'• {servername_to_footer} Info {time}',
-                     icon_url=guild.icon.url)
+    embed.add_field(name='Ссылки', value=f'{telegram_emodji} Telegram-канал: {telegram_channels_link} \n'
+                                         f'{discord_emodji} Discord-сервер: {discord_server_link}\n')
+    embed.set_footer(text=f'• Запрос от {interaction.user}\n• {servername_to_footer} Info {time}',
+                     icon_url=interaction.user.avatar.url)
     await channel.send(embed=embed)
 async def warn(interaction, guild_id, user_id, user_name, guild):
     database_location = sqlite3.connect(f'{servername_database}_discord.db')
@@ -152,7 +166,9 @@ async def warn(interaction, guild_id, user_id, user_name, guild):
     database_location.close()
     reason = 'некорректная причина выдачи наказания!'
     embed = nextcord.Embed(title='Предупреждение', color=nextcord.Color.dark_purple())
-    embed.add_field(name=f'{user_name} ваш было выдано предупреждение\nПричина: {reason}\nУ вас {warn_count} предупреждений ', value='')
+    embed.add_field(name=f'{member_emodji} {user_name} ваш было выдано предупреждение\n'
+                         f'{reason_emodji} Причина: {reason}\n'
+                         f'{warn_emodji} У вас {warn_count} предупреждений ', value='')
     embed.set_footer(text=f'• {servername_to_footer} Warn | {datetime.datetime.now().replace(microsecond=0)}',
                      icon_url=interaction.guild.icon.url)
     await interaction.channel.send(embed=embed)
@@ -195,9 +211,20 @@ async def on_ready():
                 last_warn_time TIMESTAMP DEFAULT CURRENT_TIMESTAMP
             )
         """)
+    cursor.execute("""
+            CREATE TABLE IF NOT EXISTS tickets_history (
+                guild_id INTEGER NOT NULL,
+                user_id INTEGER NOT NULL,
+                close_reason TEXT NOT NULL,
+                close_data TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+            )
+        """)
     database_location.commit()
     database_location.close()
     win_notification("Bot Started", f"Дискорд бот запущен\n{servername_database}_discord.db started\nTime: {datetime.datetime.now().replace(microsecond=0)}")
+@client_discord.event
+async def on_disconnect():
+    scheduler.shutdown()
 @client_discord.event
 async def on_member_join(member):
     user_id = member.id
@@ -223,17 +250,27 @@ async def on_member_join(member):
         title=f'Привет, добро пожаловать на сервер "{servername_database}"',
         color=nextcord.Color.purple()
     )
-    embed_server.set_thumbnail(url=member.avatar.url)
+    if member.avatar:
+        embed_server.set_thumbnail(url=member.avatar.url)
+    else:
+        embed_server.set_thumbnail(url='https://cdn.discordapp.com/embed/avatars/0.png')
+
+
     embed_server.add_field(name='Информация', value='Ищи всю нужную информацию в канале "информация"')
-    embed_server.set_footer(text=f'{servername_database} Welcome | {datetime.datetime.now().replace(microsecond=0)}')
+    embed.set_footer(text=f'• {servername_to_footer} Welcome | {datetime.datetime.now().replace(microsecond=0)}',
+                     icon_url=interaction.guild.icon.url)
 
     embed_user = nextcord.Embed(
         title=f'Привет, благодарим за присоединение к серверу "{servername_database}"',
         color=nextcord.Color.purple()
     )
-    embed_user.set_thumbnail(url=member.avatar.url)
+    if member.avatar:
+        embed_user.set_thumbnail(url=member.avatar.url)
+    else:
+        embed_user.set_thumbnail(url='https://cdn.discordapp.com/embed/avatars/0.png')
     embed_user.add_field(name='Информация', value=f'Всю необходимую информацию вы можете найти в канале "информация".')
-    embed_user.set_footer(text=f'{servername_database} Welcome | {datetime.datetime.now().replace(microsecond=0)}')
+    embed.set_footer(text=f'• {servername_to_footer} Welcome | {datetime.datetime.now().replace(microsecond=0)}',
+                     icon_url=interaction.guild.icon.url)
 
     channel = nextcord.utils.get(member.guild.channels, name='добро-пожаловать')
     if channel:
@@ -302,9 +339,10 @@ async def ban(interaction: Interaction, member: nextcord.Member,
             if reason in ['Причина не указана']:
                 await warn(interaction, interaction.guild.id, interaction.user.id,
                            interaction.user.name, interaction.guild)
-            time = datetime.datetime.now().replace(microsecond=0)
-            embed = nextcord.Embed(title="Информация о блокировке", color=nextcord.Color.dark_purple())
-            embed.add_field(name=' ', value=f'Администратор: {interaction.user.mention}\n{reason_emodji} Причина: {reason}\nЗаблокированный: {member.mention}\n')
+            embed = nextcord.Embed(title=f"{created_since_emodji} Информация о блокировке", color=nextcord.Color.dark_purple())
+            embed.add_field(name=' ', value=f'{staff_emodji} Администратор: {interaction.user.mention}\n'
+                                            f'{reason_emodji} Причина: {reason}\n'
+                                            f'{member_emodji} Заблокированный: {member.mention}\n')
             embed.set_footer(text=f'• {servername_to_footer} Moderation | {datetime.datetime.now().replace(microsecond=0)}',
                              icon_url=interaction.guild.icon.url)
             await interaction.response.send_message(embed=embed)
@@ -339,14 +377,14 @@ async def warn_command(interaction: Interaction, member: nextcord.Member,
                 await interaction.response.send_message(f'Произошла ошибка: {e}', ephemeral=True)
             try:
                 embed = nextcord.Embed(title=f'Информация о {member.name}', color=nextcord.Color.dark_purple())
-                embed.add_field(name=' ', value=f'Количество предупреждений: {warn_count[0]}\n'
-                                                f'Последнее предупреждение: {warn_last[0]}')
+                embed.add_field(name=' ', value=f'{warn_emodji} Количество предупреждений: {warn_count[0]}\n'
+                                                f'{time_emodji} Последнее предупреждение: {warn_last[0]}')
                 embed.set_footer(text=f'•{servername_to_footer} warn | {datetime.datetime.now().replace(microsecond=0)}',
                                  icon_url=interaction.guild.icon.url)
                 await interaction.response.send_message(embed=embed, ephemeral=True)
             except TypeError:
                 embed = nextcord.Embed(title='Информация', color=nextcord.Color.dark_purple())
-                embed.add_field(name='', value=f'{member.name} не найден в базе данных!')
+                embed.add_field(name='', value=f'{member_emodji} {member.name} не найден в базе данных!')
                 embed.set_footer(
                     text=f'•{servername_to_footer} Warn | {datetime.datetime.now().replace(microsecond=0)}',
                     icon_url=interaction.guild.icon.url)
@@ -372,8 +410,11 @@ async def warn_command(interaction: Interaction, member: nextcord.Member,
             except sqlite3.Error as e:
                 logger.error(f'Something went w rong. Error: {e}')
                 await interaction.response.send_message(f'Произошла ошибка: {e}')
-            embed = nextcord.Embed(title='Предупреждение', color=nextcord.Color.dark_purple())
-            embed.add_field(name='', value=f'Администратор: {interaction.user.mention}\n{reason_emodji} Причина: {reason}\nПредупреждённый: {member.mention}\nКоличество предупреждений: {embed_result[0]}')
+            embed = nextcord.Embed(title=f'{created_since_emodji} Предупреждение', color=nextcord.Color.dark_purple())
+            embed.add_field(name='', value=f'{staff_emodji} Администратор: {interaction.user.mention}\n'
+                                           f'{reason_emodji} Причина: {reason}\n'
+                                           f'{warn_emodji} Предупреждённый: {member.mention}\n'
+                                           f'{created_since_emodji} Количество предупреждений: {embed_result[0]}')
             embed.set_footer(text=f'• {servername_to_footer} Warn | {datetime.datetime.now().replace(microsecond=0)}',
                              icon_url=interaction.guild.icon.url)
             await interaction.response.send_message(embed=embed)
@@ -403,9 +444,10 @@ async def kick(interaction: Interaction, member: nextcord.Member, reason: str = 
             if reason in ['Причина не указана']:
                 await warn(interaction, interaction.guild.id, interaction.user.id,
                            interaction.user.name, interaction.guild)
-            time = datetime.datetime.now().replace(microsecond=0)
-            embed = nextcord.Embed(title="Информация о удалении", color=nextcord.Color.dark_purple())
-            embed.add_field(name=' ', value=f'Администратор: {interaction.user.mention}\n{reason_emodji} Причина: {reason}\nУдалённый: {member.mention}')
+            embed = nextcord.Embed(title=f"{created_since_emodji} Информация о удалении", color=nextcord.Color.dark_purple())
+            embed.add_field(name=' ', value=f'{staff_emodji} Администратор: {interaction.user.mention}\n'
+                                            f'{reason_emodji} Причина: {reason}\n'
+                                            f'{member_emodji} Удалённый: {member.mention}')
             embed.set_footer(text=f'• {servername_to_footer} warn | {datetime.datetime.now().replace(microsecond=0)}',
                              icon_url=interaction.guild.icon.url)
             await interaction.response.send_message(embed=embed)
@@ -454,16 +496,17 @@ async def serverinfo(interaction: Interaction,
             embed.add_field(name='Основное', value=f'{guild_owner_emodji} Владелец: {server_owner}\n'
                                               f'{verification_level_emodji} Уровень проверки: {verification_level_show}\n'
                                               f'{created_since_emodji} Создан: <t:{int(created_at.timestamp())}:F>\n(<t:{int(created_at.timestamp())}:R>)\n'
-                                              f'{all_categories_emodji} Всего {text_channels + voice_channels + categories} каналов\n'
-                                              f'{stack_emodji} {all_categories_emodji} Текстовые каналы: {text_channels}\n'
-                                              f'{stack_emodji} {voice_emodji} Голосовые каналы: {voice_channels}\n'
-                                              f'{slide_emodji} {categories_emodji} Категории: {categories}\n')
+                                              f'{slash_emodji} Всего {text_channels + voice_channels + categories} каналов\n'
+                                              f'{text_emodji} Текстовые каналы: {text_channels}\n'
+                                              f'{voice_emodji} Голосовые каналы: {voice_channels}\n'
+                                              f'{categories_emodji} Категории: {categories}\n')
             embed.add_field(name='Пользователи', value=f'{members_emodji} Всего {total_members} участников\n'
-                                                       f'{stack_emodji} Ботов: {bots}\n'
-                                                       f'{slide_emodji} Участников: {without_bot}\n')
+                                                       f'{bot_emodji} Ботов: {bots}\n'
+                                                       f'{member_emodji} Участников: {without_bot}\n')
             boost_level = guild.premium_tier
             embed.add_field(name='Бусты', value=f'{boost_emodji} Уровень: {boost_level} (бустов - {guild.premium_subscription_count})\n')
-            embed.add_field(name='Ссылки', value=f'📲Telegram-канал: {telegram_channels_link} \n👾Discord-сервер: {discord_server_link}\n')
+            embed.add_field(name='Ссылки', value=f'{telegram_emodji} Telegram-канал: {telegram_channels_link} \n'
+                                                 f'{discord_emodji} Discord-сервер: {discord_server_link}\n')
             embed.set_footer(text=f'• Запрос от {interaction.user}\n• {servername_to_footer} Info {time}',
                              icon_url=interaction.user.avatar.url)
             await interaction.response.send_message(embed=embed, ephemeral=True)
@@ -540,15 +583,51 @@ async def members(interaction: Interaction):
     if nextcord.utils.get(interaction.user.roles, name='Администратор') is not None:
         time = datetime.datetime.now().replace(microsecond=0)
         guild = interaction.guild
-        members_info = [f"{member.mention}-{member.name} (ID: {member.id}) (Высшая роль: {member.top_role})" for member
+        members_info = [f"{member_emodji} {member.mention}-{member.name} (ID: {member.id}) (Высшая роль: {member.top_role})" for member
                         in guild.members]
 
         embed = nextcord.Embed(title='Участники сервера', description='\n'.join(members_info), color=0xffffff)
-        embed.set_footer(text=f'{servername_to_footer} Info {time}\nНа сервере {guild.member_count} участников')
+        embed.set_footer(text=f'• {servername_to_footer} Info {time}\n• На сервере {guild.member_count} участников',
+                         icon_url=interaction.guild.icon.url)
         await interaction.response.send_message(embed=embed, ephemeral=True)
     else:
         await interaction.response.send_message(f'{interaction.user.mention}. У вас недостаточно прав для использования этой команды!', ephemeral=True)
 
+@client_discord.slash_command(name='mute-list', description='Выводит список заглушённых пользователей')
+async def mute_list(interaction: Interaction):
+    logger = logging.getLogger(__name__)
+    logger.info(f'Пользователь {interaction.user.name} вызвал команду для списка заглушённых пользователей')
+    if nextcord.utils.get(interaction.user.roles, name="Администратор"):
+
+        mutes = [f'{member_emodji} {member.mention} (Высшая роль: {member.top_role})' for member in interaction.guild.members
+                 if nextcord.utils.get(member.roles, name='Muted')]
+        mutes_count = len(mutes)
+        embed = nextcord.Embed(title='Список заглушённых участников', description='\n'.join(mutes),
+                               color=nextcord.Color.dark_purple())
+        embed.set_footer(text=f'• {servername_to_footer} Info | {datetime.datetime.now().replace(microsecond=0)}\nНа сервере {mutes_count} заглушённых.',
+                         icon_url=interaction.guild.icon.url)
+        await interaction.response.send_message(embed=embed, ephemeral=True)
+    else:
+        interaction.response.send_message(f'{interaction.user.mention}. У вас недостаточно прав для использования этой команды!', ephemeral=True)
+
+@client_discord.slash_command(name='ban-list', description='Выводит список заблокированных пользователей')
+async def ban_list(interaction: Interaction):
+    logger = logging.getLogger(__name__)
+    logger.info(f'Пользователь {interaction.user.name} использовал команду для вывода списка заблокированных пользователей')
+    if nextcord.utils.get(interaction.user.roles, name='Администратор'):
+        ban_list = []
+        async for ban_entry in interaction.guild.bans():
+            ban_list.append(f'{member_emodji} {ban_entry.user} (Причина: {ban_entry.reason})')
+        ban_count = len(ban_list)
+        embed = nextcord.Embed(title='Список заблокированных', description='\n'.join(ban_list),
+                               color=0xffffff)
+        embed.set_footer(
+            text=f'• {servername_to_footer} Info | {datetime.datetime.now().replace(microsecond=0)}\n'
+                 f'• На сервере {ban_count} заглушённых.',
+            icon_url=interaction.guild.icon.url)
+        await interaction.response.send_message(embed=embed, ephemeral=True)
+    else:
+        await interaction.response.send_message("У вас нет прав на просмотр списка заблокированных.", ephemeral=True)
 
 
 @client_discord.slash_command(name='help', description='Выводит список команд бота')
@@ -563,23 +642,39 @@ async def help(interaction: Interaction,
     logger = logging.getLogger(__name__)
     if rank == 'default':
         logger.info(f'Пользователь {interaction.user.mention} вызвал команду для вывода списка команд. Ранг: Участник')
-        time = datetime.datetime.now().replace(microsecond=0)
         embed = nextcord.Embed(title="Доступные команды сервера", color=0xffffff)
-        embed.add_field(name="Ранг: Участник", value=f"Информация о участнике: /info Участник \nАватар участника: /avatar Участник \n Информация о погоде: /weather Город(любой)\nВывести это сообщение: /help", inline=False)
-        embed.set_footer(text=f'•{servername_to_footer} Help | {datetime.datetime.now().replace(microsecond=0)}',
+        embed.add_field(name=f"{created_since_emodji} Ранг: Участник",
+                        value=f"• Информация о участнике: /info Участник \n"
+                              f"• Аватар участника: /avatar Участник \n"
+                              f"• Информация о погоде: /weather Город(любой)\n"
+                              f"• Вывести это сообщение: /help",
+                        inline=False)
+        embed.set_footer(text=f'• {servername_to_footer} Help | {datetime.datetime.now().replace(microsecond=0)}',
                          icon_url=interaction.guild.icon.url)
         await interaction.response.send_message(embed=embed, ephemeral=True)
     elif rank == 'mod':
         if nextcord.utils.get(interaction.user.roles, name='Администратор') is not None:
             logger.info(
                 f'Пользователь {interaction.user.mention} вызвал команду для вывода списка команд. Ранг: Модерация')
-            time = datetime.datetime.now().replace(microsecond=0)
             embed = nextcord.Embed(title="Доступные команды сервера", color=0xffffff)
             embed.add_field(
-                name="Ранг: Модерация",
-                value=f"Блокировка: /ban Нарушитель причина \nРазблокировка: /unban Нарушитель причина \nУдаление: /kick Нарушитель причина \nОтчистка: /clear количество(можно любым количеством либо 0 для удаления всего) \nСписок всех учатников: /members \nВывод информации о сервере: /serverinfo \nЗаглушение участника: /mute Нарушитель причина"f" \nРазглушение участника: /unmute Нарушитель причина \nИнформация о участнике: /info Участник \nАватар участника: /avatar Участник \nИнформация о погоде: /weather Город(любой) \nВывод этого сообщения: /help mod\nОтправить сообщение: /say (сообщение)\nДействия с логами: /log (download, archive, save)",
+                name=f"{created_since_emodji} Ранг: Модерация",
+                value=f"• Блокировка: /ban Нарушитель причина \n"
+                      f"• Разблокировка: /unban Нарушитель причина \n"
+                      f"• Удаление: /kick Нарушитель причина \n"
+                      f"• Отчистка: /clear количество(можно любым количеством либо 0 для удаления всего) \n"
+                      f"• Список всех учатников: /members \n"
+                      f"• Вывод информации о сервере: /serverinfo \n"
+                      f"• Заглушение участника: /mute Нарушитель причина"f" \n"
+                      f"• Разглушение участника: /unmute Нарушитель причина \n"
+                      f"• Информация о участнике: /info Участник \n"
+                      f"• Аватар участника: /avatar Участник \n"
+                      f"• Информация о погоде: /weather Город(любой) \n"
+                      f"• Вывод этого сообщения: /help mod\n"
+                      f"• Отправить сообщение: /say (сообщение)\n"
+                      f"• Действия с логами: /log (download, archive, save)",
                 inline=False)
-            embed.set_footer(text=f' •{servername_to_footer} Help | {datetime.datetime.now().replace(microsecond=0)}',
+            embed.set_footer(text=f'• {servername_to_footer} Help | {datetime.datetime.now().replace(microsecond=0)}',
                              icon_url=interaction.guild.icon.url)
             await interaction.response.send_message(embed=embed, ephemeral=True)
         else:
@@ -612,10 +707,11 @@ async def mute(interaction: Interaction, member: nextcord.Member, reason: str = 
             if reason in ['Причина не указана']:
                 await warn(interaction, interaction.guild.id, interaction.user.id,
                            interaction.user.name, interaction.guild)
-            time = datetime.datetime.now().replace(microsecond=0)
-            embed = nextcord.Embed(title=f"Информация о заглушении", color=nextcord.Color.dark_purple())
-            embed.add_field(name=' ', value=f'Администратор: {interaction.user.mention}\nПричина: {reason}\nЗаглушённый: {member.mention}')
-            embed.set_footer(text=f' •{servername_to_footer} Moderation | {datetime.datetime.now().replace(microsecond=0)}',
+            embed = nextcord.Embed(title=f"{created_since_emodji} Информация о заглушении", color=nextcord.Color.dark_purple())
+            embed.add_field(name=' ', value=f'{staff_emodji} Администратор: {interaction.user.mention}\n'
+                                            f'{reason_emodji} Причина: {reason}\n'
+                                            f'{member_emodji} Заглушённый: {member.mention}')
+            embed.set_footer(text=f'• {servername_to_footer} Moderation | {datetime.datetime.now().replace(microsecond=0)}',
                              icon_url=interaction.guild.icon.url)
             await interaction.response.send_message(embed=embed)
         except nextcord.Forbidden:
@@ -655,9 +751,10 @@ async def unmute(interaction: Interaction, member: nextcord.Member, reason: str 
             if reason in ['Причина не указана']:
                 await warn(interaction, interaction.guild.id, interaction.user.id,
                            interaction.user.name, interaction.guild)
-            time = datetime.datetime.now().replace(microsecond=0)
-            embed = nextcord.Embed(title='Информации о разглушении', color=nextcord.Color.dark_purple())
-            embed.add_field(name=' ', value=f'Администратор: {interaction.user.mention}\nПричина: {reason}\nРазглушённый: {member.mention}')
+            embed = nextcord.Embed(title=f'{created_since_emodji} Информации о разглушении', color=nextcord.Color.dark_purple())
+            embed.add_field(name=' ', value=f'{staff_emodji} Администратор: {interaction.user.mention}\n'
+                                            f'{reason_emodji} Причина: {reason}\n'
+                                            f'{member_emodji} Разглушённый: {member.mention}')
             embed.set_footer(text=f' •{servername_to_footer} Moderation | {datetime.datetime.now().replace(microsecond=0)}',
                              icon_url=interaction.guild.icon.url)
             await interaction.response.send_message(embed=embed)
@@ -679,13 +776,12 @@ async def unban(interaction: Interaction, user_id: str, reason: str = SlashOptio
         try:
             user = await client_discord.fetch_user(int(user_id))
             await interaction.guild.unban(user, reason=reason)
-            time = datetime.datetime.now().replace(microsecond=0)
-            embed = nextcord.Embed(title='Информация о разблокировке', color=nextcord.Color.dark_purple())
-            embed.add_field(name=' ', value=f'Администратор: {interaction.user.mention}\n'
+            embed = nextcord.Embed(title=f'{created_since_emodji} Информация о разблокировке', color=nextcord.Color.dark_purple())
+            embed.add_field(name=' ', value=f'{staff_emodji}Администратор: {interaction.user.mention}\n'
                                             f'{reason_emodji} Причина: {reason}\n'
-                                            f'Разблокированный: {user.mention}\n')
+                                            f'{member_emodji} Разблокированный: {user.mention}\n')
             embed.set_footer(
-                text=f' •{servername_to_footer} Moderation | {datetime.datetime.now().replace(microsecond=0)}',
+                text=f'• {servername_to_footer} Moderation | {datetime.datetime.now().replace(microsecond=0)}',
                 icon_url=interaction.guild.icon.url)
 
             if reason == 'Причина не указана':
@@ -725,7 +821,6 @@ async def info(interaction: Interaction, member: nextcord.Member,
                )):
     logger = logging.getLogger(__name__)
     logger.info(f'Пользователь {interaction.user.mention} вызвал команду для вывода информации о участнике')
-    time = datetime.datetime.now().replace(microsecond=0)
     excepted_roles = ["@everyone", "Member"]
     role_count = len([role.name for role in member.roles if role.name not in excepted_roles])
     roles = member.roles
@@ -1002,20 +1097,22 @@ async def database(interaction: Interaction,
             try:
                 database_location = sqlite3.connect(f'{servername_database}_discord.db')
                 cursor = database_location.cursor()
-                cursor.execute('''
-                    CREATE TABLE IF NOT EXISTS users_list (
-                        user_id INTEGER PRIMARY KEY,
-                        user_name TEXT NOT NULL,
-                        user_mention TEXT NOT NULL,
-                        user_joined_date DATETIME NOT NULL
-                    )
-                ''')
-                database_location.commit()
                 users_data = [(member.id, member.name, member.mention, member.joined_at) for member in
                               interaction.guild.members]
                 cursor.executemany(
                     "INSERT OR IGNORE INTO users_list (user_id, user_name, user_mention, user_joined_date) VALUES (?, ?, ?, ?)",
                     users_data)
+                cursor.execute("""
+                            CREATE TABLE IF NOT EXISTS tickets_reputation (
+                                guild_id INTEGER NOT NULL,
+                                user_id INTEGER NOT NULL,
+                                user_name TEXT NOT NULL
+                            )
+                        """)
+                admin_list = [(interaction.guild.id, member.id, member.name) for member in interaction.guild.members
+                              if 'Администратор' in member.roles]
+                cursor.executemany("INSERT OR IGNORE INTO tickets_reputation (guild_id, user_id, user_name) VALUES (?, ?, ?)", admin_list)
+
                 database_location.commit()
 
                 await interaction.response.send_message(f'База данных {servername_database}_discord.db перезапущена.', ephemeral=True)
@@ -1091,6 +1188,7 @@ async def database(interaction: Interaction,
             await interaction.response.send_message(embed=embed, ephemeral=True)
     else:
         await interaction.response.send_message('У вас нет прав для выполнения этой команды.')
+
 try:
     client_discord.run(TOKEN)
 except Exception as e:
