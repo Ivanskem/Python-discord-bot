@@ -8,7 +8,7 @@ import openai
 from nextcord.ext import commands, tasks
 from nextcord import Interaction, SlashOption, ButtonStyle
 from nextcord.errors import Forbidden
-from nextcord.ui import Button, View, UserSelect
+from nextcord.ui import Button, View, UserSelect, Select, TextInput, Modal
 import asyncio
 import time
 import sys
@@ -72,6 +72,168 @@ telegram_emodji_id = 'add id of your emodji'
 telegram_emodji = f"<:customemoji:{telegram_emodji_id}>"
 discord_emodji_id = 'add id of your emodji'
 discord_emodji = f"<:customemoji:{discord_emodji_id}>"
+admin_tickets_id = "Enter you're admin tickets channel id"
+
+
+class Ticket(Select):
+    def __init__(self):
+        options = [
+            nextcord.SelectOption(label='Support', description="Получение помощи от администрации или преподавателей",
+                                  emoji="🛠"),
+            nextcord.SelectOption(label="Bot", description="Получение помощи пользованием либо устройством бота",
+                                  emoji="🤖")
+        ]
+        super().__init__(placeholder="Выберите категорию", min_values=1, max_values=1, options=options)
+
+    async def callback(self, interaction: Interaction):
+        category = self.values[0]
+        await interaction.response.send_message(f'Вы выбрали {category}', ephemeral=True)
+        await self.create_ticket(interaction, category)
+
+    async def create_ticket(self, interaction: Interaction, category: str):
+        channel_name = f'ticket-{interaction.user.name}'.replace(" ", "-").lower()
+        member = interaction.user
+        admin_role = nextcord.utils.get(interaction.guild.roles, name='Администратор')
+        bot = interaction.guild.me
+        default_role = interaction.guild.default_role
+        overwrites = {
+            default_role: nextcord.PermissionOverwrite(view_channel=False),
+            member: nextcord.PermissionOverwrite(view_channel=True, send_messages=True),
+            bot: nextcord.PermissionOverwrite(view_channel=True, send_messages=True),
+            admin_role: nextcord.PermissionOverwrite(view_channel=True, send_messages=True)
+        }
+        category_channel = nextcord.utils.get(interaction.guild.categories, name='обращения')
+        if category_channel is None:
+            category_channel = await interaction.guild.create_category(name='обращения')
+
+        ticket_channel = await interaction.guild.create_text_channel(name=channel_name, overwrites=overwrites,
+                                                                     category=category_channel)
+        action_view = TicketActionView()
+        admin_tickets = await interaction.guild.fetch_channel(admin_tickets_id)
+        channel_id = nextcord.utils.get(interaction.guild.channels, name=channel_name)
+        embed = nextcord.Embed(title='Обращение', color=0xffffff)
+        embed.add_field(name=f'{created_since_emodji} Обращение: {member.name}',
+                        value=f'{slash_emodji} • Создано обращение на тему: {category}.\n'
+                              f'{member_emodji} • Создал: {interaction.user.mention}')
+        embed_admin = nextcord.Embed(title=f'Открытие обращения', color=0xffffff)
+        embed_admin.add_field(name=f'{created_since_emodji} Тикет открыт: {interaction.user.name}',
+                              value=f'{created_since_emodji} • Канал: <#{channel_id.id}>\n'
+                                    f'{member_emodji} • Канал создал {interaction.user.name}')
+        embed_admin.set_footer(
+            text=f'• {servername_to_footer} Tickets | {datetime.datetime.now().replace(microsecond=0)}',
+            icon_url=interaction.guild.icon.url)
+        await admin_tickets.send(embed=embed_admin)
+        await ticket_channel.send(embed=embed, view=action_view)
+
+
+class TicketView(View):
+    def __init__(self):
+        super().__init__()
+        self.add_item(Ticket())
+
+
+class TicketAction(Select):
+    def __init__(self):
+        options = [
+            nextcord.SelectOption(label='Close Ticket', description="Закрыть обращение.",
+                                  emoji="❌"),
+            nextcord.SelectOption(label="Leave Feedback", description="Оставить отзыв о работе администрации",
+                                  emoji="✍")
+        ]
+        super().__init__(placeholder="Выберите действие", min_values=1, max_values=1, options=options)
+
+    async def callback(self, interaction: Interaction):
+        action = self.values[0]
+        try:
+            if action == 'Close Ticket':
+                await interaction.response.send_modal(CloseTicketModal())
+            elif action == 'Leave Feedback':
+                await interaction.response.send_modal(FeedbackModal())
+        except Exception:
+            await interaction.response.send_message(f'Произошла ошибка с подключением попробуйте ещё раз!', ephemeral=True)
+
+class TicketActionView(View):
+    def __init__(self):
+        super().__init__()
+        self.add_item(TicketAction())
+
+
+
+class CloseTicketModal(Modal):
+    def __init__(self):
+        super().__init__(title='Закрытие тикета')
+        self.reason = TextInput(label='Причина закрытия', style=nextcord.TextInputStyle.paragraph)
+        self.add_item(self.reason)
+
+    async def callback(self, interaction: Interaction):
+        reason = self.reason.value
+        database_location = sqlite3.connect(f'{servername_database}_discord.db')
+        cursor = database_location.cursor()
+        cursor.execute(
+            "INSERT INTO tickets_history (guild_id, user_id, feedback_reason, close_date) VALUES (?, ?, ?, ?)",
+            (interaction.guild.id, interaction.user.id, reason,
+             datetime.datetime.now().replace(microsecond=0))
+        )
+        database_location.commit()
+        database_location.close()
+
+        channel_id = interaction.channel_id
+        admin_tickets = await interaction.guild.fetch_channel(admin_tickets_id)
+        embed_channel = nextcord.Embed(title=f'Закрытие обращения', color=0xffffff)
+        embed_channel.add_field(name=f'{created_since_emodji} Тикет закрыл: {interaction.user.name}',
+                                value=f'{slash_emodji} • Тикет был закрыт по причине: {reason}\n'
+                                      f'{warn_emodji} • Тикет будет удалён через 10 минут')
+        embed_channel.set_footer(
+            text=f'• {servername_to_footer} Tickets | {datetime.datetime.now().replace(microsecond=0)}',
+            icon_url=interaction.guild.icon.url)
+        embed_admin = nextcord.Embed(title=f'Закрытие обращения', color=0xffffff)
+        embed_admin.add_field(name=f'{created_since_emodji} Тикет закрыл: {interaction.user.name}',
+                              value=f'{slash_emodji} • Тикет был закрыт по причине: {reason}\n'
+                                    f'{created_since_emodji} • Канал: <#{channel_id}>')
+        embed_admin.set_footer(
+            text=f'• {servername_to_footer} Tickets | {datetime.datetime.now().replace(microsecond=0)}',
+            icon_url=interaction.guild.icon.url)
+        await interaction.channel.send(embed=embed_channel)
+        await admin_tickets.send(embed=embed_admin)
+        await asyncio.sleep(10)
+        await interaction.channel.delete()
+
+class FeedbackModal(Modal):
+    def __init__(self):
+        super().__init__(title="Оставить отзыв")
+        self.feedback = TextInput(label="Отзыв", style=nextcord.TextInputStyle.paragraph)
+        self.add_item(self.feedback)
+
+    async def callback(self, interaction: nextcord.Interaction):
+        feedback = self.feedback.value
+        database_location = sqlite3.connect(f'{servername_database}_discord.db')
+        cursor = database_location.cursor()
+        cursor.execute(
+            "INSERT INTO tickets_history (guild_id, user_id, feedback_reason, close_date) VALUES (?, ?, ?, ?)",
+            (interaction.guild.id, interaction.user.id, feedback,
+             datetime.datetime.now().replace(microsecond=0))
+        )
+        database_location.commit()
+        database_location.close()
+        channel_id = interaction.channel_id
+        admin_tickets = await interaction.guild.fetch_channel(admin_tickets_id)
+        embed_channel = nextcord.Embed(title=f'Отзыв', color=0xffffff)
+        embed_channel.add_field(name=f'{created_since_emodji} Отзыв оставил: {interaction.user.name}',
+                                value=f'{slash_emodji} • Отзыв: {feedback}\n'
+                                      f'{warn_emodji} • Просьба теперь закрыть обращение')
+        embed_channel.set_footer(
+            text=f'• {servername_to_footer} Tickets | {datetime.datetime.now().replace(microsecond=0)}',
+            icon_url=interaction.guild.icon.url)
+        embed_admin = nextcord.Embed(title=f'Отзыв', color=0xffffff)
+        embed_admin.add_field(name=f'{created_since_emodji} Отзыв оставил: {interaction.user.name}',
+                              value=f'{slash_emodji} • Отзыв: {feedback}\n'
+                                    f'{created_since_emodji} Канал: <#{channel_id}>')
+        embed_admin.set_footer(
+            text=f'• {servername_to_footer} Tickets | {datetime.datetime.now().replace(microsecond=0)}',
+            icon_url=interaction.guild.icon.url)
+        await interaction.channel.send(embed=embed_channel)
+        await admin_tickets.send(embed=embed_admin)
+
 
 try:
     with open('Openai_API.txt', 'r') as f:
@@ -89,9 +251,11 @@ except FileNotFoundError:
     with open('token.txt', 'w') as f:
         f.write(TOKEN)
 
+
 def win_notification(title, message):
     toaster = ToastNotifier()
     toaster.show_toast(title, message, duration=0, threaded=True)
+
 
 async def send_server_info():
     logger = logging.getLogger(__name__)
@@ -145,6 +309,8 @@ async def send_server_info():
     embed.set_footer(text=f'• Запрос от {interaction.user}\n• {servername_to_footer} Info {time}',
                      icon_url=interaction.user.avatar.url)
     await channel.send(embed=embed)
+
+
 async def warn(interaction, guild_id, user_id, user_name, guild):
     database_location = sqlite3.connect(f'{servername_database}_discord.db')
     cursor = database_location.cursor()
@@ -165,13 +331,15 @@ async def warn(interaction, guild_id, user_id, user_name, guild):
     database_location.commit()
     database_location.close()
     reason = 'некорректная причина выдачи наказания!'
-    embed = nextcord.Embed(title='Предупреждение', color=nextcord.Color.dark_purple())
+    embed = nextcord.Embed(title=f'{created_since_emodji} Предупреждение', color=nextcord.Color.dark_purple())
     embed.add_field(name=f'{member_emodji} {user_name} ваш было выдано предупреждение\n'
                          f'{reason_emodji} Причина: {reason}\n'
                          f'{warn_emodji} У вас {warn_count} предупреждений ', value='')
     embed.set_footer(text=f'• {servername_to_footer} Warn | {datetime.datetime.now().replace(microsecond=0)}',
                      icon_url=interaction.guild.icon.url)
     await interaction.channel.send(embed=embed)
+
+
 @client_discord.event
 async def on_ready():
     print(f'{client_discord.user} запущен')
@@ -215,16 +383,20 @@ async def on_ready():
             CREATE TABLE IF NOT EXISTS tickets_history (
                 guild_id INTEGER NOT NULL,
                 user_id INTEGER NOT NULL,
-                close_reason TEXT NOT NULL,
-                close_data TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+                feedback_reason TEXT NOT NULL,
+                close_date TIMESTAMP DEFAULT CURRENT_TIMESTAMP
             )
         """)
     database_location.commit()
     database_location.close()
     win_notification("Bot Started", f"Дискорд бот запущен\n{servername_database}_discord.db started\nTime: {datetime.datetime.now().replace(microsecond=0)}")
+
+
 @client_discord.event
 async def on_disconnect():
     scheduler.shutdown()
+
+
 @client_discord.event
 async def on_member_join(member):
     user_id = member.id
@@ -279,6 +451,8 @@ async def on_member_join(member):
         logger.error(f'Канал admin не найден, укажите верный канал!')
 
     await member.send(embed=embed_user)
+
+
 @client_discord.event
 async def on_member_leave(member):
     embed_server = nextcord.Embed(title=f'Удачи, участник {member.name} покинул сервер "{servername_database}"',
@@ -298,6 +472,8 @@ async def on_member_leave(member):
     else:
         logger.error(f'Канал {channel} не найден, укажите верный канал!')
     await member.send(embed=embed_user)
+
+
 @client_discord.event
 async def on_message(message):
     for word in Forbidden_words:
@@ -309,6 +485,7 @@ async def on_message(message):
                     await msg.delete()
                 await message.channel.send(f'{message.author.mention}. В вашем сообщении обнаружено запрещённое слово. Просьба больше не нарушать.')
                 return
+
 
 @client_discord.slash_command(name='ban', description='Блокирует участника')
 async def ban(interaction: Interaction, member: nextcord.Member,
@@ -343,15 +520,20 @@ async def ban(interaction: Interaction, member: nextcord.Member,
             embed.add_field(name=' ', value=f'{staff_emodji} Администратор: {interaction.user.mention}\n'
                                             f'{reason_emodji} Причина: {reason}\n'
                                             f'{member_emodji} Заблокированный: {member.mention}\n')
-            embed.set_footer(text=f'• {servername_to_footer} Moderation | {datetime.datetime.now().replace(microsecond=0)}',
+            embed.set_footer(text=f'• {servername_to_footer} Moderation |'
+                                  f' {datetime.datetime.now().replace(microsecond=0)}',
                              icon_url=interaction.guild.icon.url)
             await interaction.response.send_message(embed=embed)
         except nextcord.Forbidden:
             logger.error('У бота не достаточно прав для блокировки пользователя!')
-            await interaction.response.send_message('У меня не достаточно прав для выполнения этой команды!', ephemeral=True)
+            await interaction.response.send_message('У меня не достаточно прав для выполнения этой команды!',
+                                                    ephemeral=True)
     else:
         logger.info(f'У {interaction.user.mention} не достаточно прав для блокировки пользователя')
-        await interaction.response.send_message('У вас не достаточно прав для использования этой команды!', ephemeral=True)
+        await interaction.response.send_message('У вас не достаточно прав для использования этой команды!',
+                                                ephemeral=True)
+
+
 @client_discord.slash_command(name='warn', description='Выдаёт предупреждение участнику')
 async def warn_command(interaction: Interaction, member: nextcord.Member,
                        action: str = SlashOption(description='Выберите действие',
@@ -419,9 +601,13 @@ async def warn_command(interaction: Interaction, member: nextcord.Member,
                              icon_url=interaction.guild.icon.url)
             await interaction.response.send_message(embed=embed)
     else:
-        await interaction.response.send_message(f'У вас недостаточно прав для использования этой команды!', ephemeral=True)
+        await interaction.response.send_message(f'У вас недостаточно прав для использования этой команды!',
+                                                ephemeral=True)
+
+
 @client_discord.slash_command(name='kick', description='Удаляет участника, участник сможет зайти повторно')
-async def kick(interaction: Interaction, member: nextcord.Member, reason: str = SlashOption(description='Причина удаления', default="Причина не указана")):
+async def kick(interaction: Interaction, member: nextcord.Member,
+               reason: str = SlashOption(description='Причина удаления', default="Причина не указана")):
     logger = logging.getLogger(__name__)
     logger.info(f'Пользователь {interaction.user.mention} вызвал команду удаления участника')
     if nextcord.utils.get(interaction.user.roles, name='Администратор') is not None:
@@ -432,9 +618,11 @@ async def kick(interaction: Interaction, member: nextcord.Member, reason: str = 
                 database_location = sqlite3.connect(f'{servername_database}_discord.db')
                 cursor = database_location.cursor()
                 cursor.execute("""
-                    INSERT INTO mod_actions (action_type, guild_id, moderator_name, moderator_id, target_user_name, target_user_id, reason, action_time) 
+                    INSERT INTO mod_actions (action_type, guild_id, moderator_name, moderator_id, target_user_name,
+                     target_user_id, reason, action_time) 
                     VALUES (?, ?, ?, ?, ?, ?, ?, ?)
-                """, ('Kick', interaction.guild.id, interaction.user.name, interaction.user.id, member.name, member.id, reason,
+                """, ('Kick', interaction.guild.id, interaction.user.name, interaction.user.id, member.name, member.id,
+                      reason,
                       datetime.datetime.now()))
                 database_location.commit()
             except sqlite3.Error as e:
@@ -444,7 +632,8 @@ async def kick(interaction: Interaction, member: nextcord.Member, reason: str = 
             if reason in ['Причина не указана']:
                 await warn(interaction, interaction.guild.id, interaction.user.id,
                            interaction.user.name, interaction.guild)
-            embed = nextcord.Embed(title=f"{created_since_emodji} Информация о удалении", color=nextcord.Color.dark_purple())
+            embed = nextcord.Embed(title=f"{created_since_emodji} Информация о удалении",
+                                   color=nextcord.Color.dark_purple())
             embed.add_field(name=' ', value=f'{staff_emodji} Администратор: {interaction.user.mention}\n'
                                             f'{reason_emodji} Причина: {reason}\n'
                                             f'{member_emodji} Удалённый: {member.mention}')
@@ -453,16 +642,17 @@ async def kick(interaction: Interaction, member: nextcord.Member, reason: str = 
             await interaction.response.send_message(embed=embed)
         except nextcord.Forbidden:
             logger.error('У бота не достаточно прав для удаления пользователя!')
-            await interaction.response.send_message('У меня не достаточно прав для выполнения этой команды!',ephemeral=True)
+            await interaction.response.send_message('У меня не достаточно прав для выполнения этой команды!',
+                                                    ephemeral=True)
     else:
         logger.info(f'У {interaction.user.mention} не достаточно прав для удаления пользователя')
-        await interaction.response.send_message('У вас не достаточно прав для использования этой команды!',ephemeral=True)
+        await interaction.response.send_message('У вас не достаточно прав для использования этой команды!',
+                                                ephemeral=True)
 @client_discord.slash_command(name='server-info', description='Выводит статистику сервера')
 async def serverinfo(interaction: Interaction,
                      type: str = SlashOption(description='Выберите какой тип статистики вы хотите вывести: новая или старая',
-                                               choices=['new', 'old'],
-                                               default='new'
-                                               )):
+                                             choices=['new', 'old'],
+                                             default='new')):
     logger = logging.getLogger(__name__)
     logger.info(f'Пользователь {interaction.user.mention} вызвал команду вывода статистики сервера')
     if nextcord.utils.get(interaction.user.roles, name='Администратор'):
@@ -586,7 +776,7 @@ async def members(interaction: Interaction):
         members_info = [f"{member_emodji} {member.mention}-{member.name} (ID: {member.id}) (Высшая роль: {member.top_role})" for member
                         in guild.members]
 
-        embed = nextcord.Embed(title='Участники сервера', description='\n'.join(members_info), color=0xffffff)
+        embed = nextcord.Embed(title=f'{created_since_emodji} Участники сервера', description='\n'.join(members_info), color=0xffffff)
         embed.set_footer(text=f'• {servername_to_footer} Info {time}\n• На сервере {guild.member_count} участников',
                          icon_url=interaction.guild.icon.url)
         await interaction.response.send_message(embed=embed, ephemeral=True)
@@ -602,7 +792,7 @@ async def mute_list(interaction: Interaction):
         mutes = [f'{member_emodji} {member.mention} (Высшая роль: {member.top_role})' for member in interaction.guild.members
                  if nextcord.utils.get(member.roles, name='Muted')]
         mutes_count = len(mutes)
-        embed = nextcord.Embed(title='Список заглушённых участников', description='\n'.join(mutes),
+        embed = nextcord.Embed(title=f'{created_since_emodji} Список заглушённых участников', description='\n'.join(mutes),
                                color=nextcord.Color.dark_purple())
         embed.set_footer(text=f'• {servername_to_footer} Info | {datetime.datetime.now().replace(microsecond=0)}\nНа сервере {mutes_count} заглушённых.',
                          icon_url=interaction.guild.icon.url)
@@ -619,11 +809,11 @@ async def ban_list(interaction: Interaction):
         async for ban_entry in interaction.guild.bans():
             ban_list.append(f'{member_emodji} {ban_entry.user} (Причина: {ban_entry.reason})')
         ban_count = len(ban_list)
-        embed = nextcord.Embed(title='Список заблокированных', description='\n'.join(ban_list),
+        embed = nextcord.Embed(title=f'{created_since_emodji} Список заблокированных', description='\n'.join(ban_list),
                                color=0xffffff)
         embed.set_footer(
             text=f'• {servername_to_footer} Info | {datetime.datetime.now().replace(microsecond=0)}\n'
-                 f'• На сервере {ban_count} заглушённых.',
+                 f'• На сервере {ban_count} заблокированных.',
             icon_url=interaction.guild.icon.url)
         await interaction.response.send_message(embed=embed, ephemeral=True)
     else:
@@ -755,7 +945,7 @@ async def unmute(interaction: Interaction, member: nextcord.Member, reason: str 
             embed.add_field(name=' ', value=f'{staff_emodji} Администратор: {interaction.user.mention}\n'
                                             f'{reason_emodji} Причина: {reason}\n'
                                             f'{member_emodji} Разглушённый: {member.mention}')
-            embed.set_footer(text=f' •{servername_to_footer} Moderation | {datetime.datetime.now().replace(microsecond=0)}',
+            embed.set_footer(text=f'• {servername_to_footer} Moderation | {datetime.datetime.now().replace(microsecond=0)}',
                              icon_url=interaction.guild.icon.url)
             await interaction.response.send_message(embed=embed)
         except nextcord.Forbidden:
@@ -1188,6 +1378,22 @@ async def database(interaction: Interaction,
             await interaction.response.send_message(embed=embed, ephemeral=True)
     else:
         await interaction.response.send_message('У вас нет прав для выполнения этой команды.')
+
+@client_discord.slash_command(name='ticket-menu', description='Вывод сообщения для системы обращений')
+async def menu(interaction: Interaction):
+    if nextcord.utils.get(interaction.user.roles, name='Администратор'):
+        view = TicketView()
+        embed = nextcord.Embed(title="Тикет поддержки", color=0xffffff)
+        embed.add_field(name=f'{created_since_emodji} • Чтобы открыть билет поддержки, выберите категорию ниже:',
+                        value=f'{reason_emodji} • Описывайте свою просьбу или проблему как можно подробнее,'
+                              f' чтобы вам смогли помочь как можно быстрее.')
+        embed.set_footer(
+            text=f'• {servername_to_footer} Tickets | {datetime.datetime.now().replace(microsecond=0)}',
+            icon_url=interaction.guild.icon.url)
+        await interaction.channel.send(embed=embed, view=view)
+        await interaction.response.send_message(f'Сообщение успешно отправлено', ephemeral=True)
+    else:
+        await interaction.response.send_message(f'У вас недостаточно прав для вызова этой команды!', ephemeral=True)
 
 try:
     client_discord.run(TOKEN)
