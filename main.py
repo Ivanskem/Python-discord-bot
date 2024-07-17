@@ -72,7 +72,83 @@ telegram_emodji_id = 'add id of your emodji'
 telegram_emodji = f"<:customemoji:{telegram_emodji_id}>"
 discord_emodji_id = 'add id of your emodji'
 discord_emodji = f"<:customemoji:{discord_emodji_id}>"
-admin_tickets_id = "Enter you're admin tickets channel id"
+admin_tickets = "Enter you're admin tickets channel id"
+
+class Getrole(Select):
+    def __init__(self):
+        options = [
+            nextcord.SelectOption(label="R-71", description="Нажмите чтобы получить группу Р-71",
+                                  emoji="😉"),
+            nextcord.SelectOption(label="R-72", description="Нажмите чтобы получить группу Р-72",
+                                  emoji="😉"),
+            nextcord.SelectOption(label="IE-71", description="Нажмите чтобы получить группу ИЭ-71",
+                                  emoji="😉"),
+            nextcord.SelectOption(label="IE-72", description="Нажмите чтобы получить группу ИЭ-72",
+                                  emoji="😉"),
+            nextcord.SelectOption(label="II-71", description="Нажмите чтобы получить группу ИИ-71",
+                                  emoji="😉"),
+            nextcord.SelectOption(label="II-72", description="Нажмите чтобы получить группу ИИ-72",
+                                  emoji="😉")
+        ]
+        super().__init__(placeholder='Получить группу', min_values=1, max_values=1, options=options)
+
+    async def callback(self, interaction: Interaction):
+        R_71 = nextcord.utils.get(interaction.guild.roles, name='Ученик Р-71')
+        R_72 = nextcord.utils.get(interaction.guild.roles, name='Ученик Р-72')
+        IE_71 = nextcord.utils.get(interaction.guild.roles, name='Ученик ИЭ-71')
+        IE_72 = nextcord.utils.get(interaction.guild.roles, name='Ученик ИЭ-72')
+        II_71 = nextcord.utils.get(interaction.guild.roles, name='Ученик ИИ-71')
+        II_72 = nextcord.utils.get(interaction.guild.roles, name='Ученик ИИ-72')
+
+        picked_group = self.values[0]
+
+        if picked_group == 'R-71':
+            await interaction.user.add_roles(R_71, reason='Clicked getrole')
+            await interaction.response.send_message(f'Вы выбрали группу Р-71 и она была выдана', ephemeral=True)
+        elif picked_group == 'R-72':
+            await interaction.user.add_roles(R_72, reason='Clicked getrole')
+            await interaction.response.send_message(f'Вы выбрали группу Р-72 и она была выдана', ephemeral=True)
+        elif picked_group == 'IE-71':
+            await interaction.user.add_roles(IE_71, reason='Clicked getrole')
+            await interaction.response.send_message(f'Вы выбрали группу ИЭ-71 и она была выдана', ephemeral=True)
+        elif picked_group == 'IE-72':
+            await interaction.user.add_roles(IE_72, reason='Clicked getrole')
+            await interaction.response.send_message(f'Вы выбрали группу ИЭ-72 и она была выдана', ephemeral=True)
+        elif picked_group == 'II-71':
+            await interaction.user.add_roles(II_71, reason='Clicked getrole')
+            await interaction.response.send_message(f'Вы выбрали группу ИИ-71 и она была выдана', ephemeral=True)
+        elif picked_group == 'II-72':
+            await interaction.user.add_roles(II_72, reason='Clicked getrole')
+            await interaction.response.send_message(f'Вы выбрали группу ИИ-72 и она была выдана', ephemeral=True)
+
+
+class GetroleView(View):
+    def __init__(self):
+        super().__init__()
+        self.add_item(Getrole())
+
+
+class Verify(Select):
+    def __init__(self):
+        options = [
+            nextcord.SelectOption(label="Verify", description='Выдаёт роль "Верифицирован"',
+                                  emoji="✔")
+        ]
+        super().__init__(placeholder="Пройти верификацию", min_values=1, max_values=1, options=options)
+
+    async def callback(self, interaction: Interaction):
+        verify_role = nextcord.utils.get(interaction.guild.roles, name='Верифицирован✅️')
+        if nextcord.utils.get(interaction.user.roles, name=verify_role) is not None:
+            await interaction.response.send_message(f'У вас уже есть эта роль', ephemeral=True)
+        else:
+            await interaction.user.add_roles(verify_role, reason='Clicked Verify')
+            await interaction.response.send_message(f'{interaction.user.mention} Вам была выдана роль <@&role_id>', ephemeral=True)
+
+
+class VerifyView(View):
+    def __init__(self):
+        super().__init__()
+        self.add_item(Verify())
 
 
 class Ticket(Select):
@@ -195,7 +271,7 @@ class CloseTicketModal(Modal):
             icon_url=interaction.guild.icon.url)
         await interaction.channel.send(embed=embed_channel)
         await admin_tickets.send(embed=embed_admin)
-        await asyncio.sleep(10)
+        await asyncio.sleep(600)
         await interaction.channel.delete()
 
 class FeedbackModal(Modal):
@@ -1379,6 +1455,7 @@ async def database(interaction: Interaction,
     else:
         await interaction.response.send_message('У вас нет прав для выполнения этой команды.')
 
+
 @client_discord.slash_command(name='ticket-menu', description='Вывод сообщения для системы обращений')
 async def menu(interaction: Interaction):
     if nextcord.utils.get(interaction.user.roles, name='Администратор'):
@@ -1395,6 +1472,39 @@ async def menu(interaction: Interaction):
     else:
         await interaction.response.send_message(f'У вас недостаточно прав для вызова этой команды!', ephemeral=True)
 
+
+@client_discord.slash_command(name='verify-menu', description='Вывод сообщения для системы верификации')
+async def menu(interaction: Interaction):
+    if nextcord.utils.get(interaction.user.roles, name='Администратор'):
+        view = VerifyView()
+        embed = nextcord.Embed(title='Получение роли', color=0xffffff)
+        embed.add_field(name=f'{created_since_emodji} • Нажмите кнопку ниже',
+                        value=f'{reason_emodji} • Чтобы получить роль <@&1role_id>\n'
+                              f'{warn_emodji} • Вам нужно нажать на кнопку ниже и выбрать "Verify"')
+        embed.set_footer(
+            text=f'• {servername_to_footer} Verify | {datetime.datetime.now().replace(microsecond=0)}',
+            icon_url=interaction.guild.icon.url)
+        await interaction.channel.send(embed=embed, view=view)
+        await interaction.response.send_message(f'Сообщение успешно отправлено', ephemeral=True)
+    else:
+        await interaction.response.send_message(f'У вас недостаточно прав для использования этой команды!', ephemeral=True)
+
+
+@client_discord.slash_command(name='getrole-menu', description='Вывод сообщения для системы выбора группы')
+async def menu(interaction: Interaction):
+    if nextcord.utils.get(interaction.user.roles, name='Администратор'):
+        view = GetroleView()
+        embed = nextcord.Embed(title='Получение группы', color=0xffffff)
+        embed.add_field(name=f'{created_since_emodji} • Нажмите кнопку ниже',
+                        value=f'{reason_emodji} • Чтобы получить вашу группу\n'
+                              f'{warn_emodji} • Вам нужно нажать на кнопку ниже и выбрать вашу группу')
+        embed.set_footer(
+            text=f'• {servername_to_footer} Verify | {datetime.datetime.now().replace(microsecond=0)}',
+            icon_url=interaction.guild.icon.url)
+        await interaction.channel.send(embed=embed, view=view)
+        await interaction.response.send_message(f'Сообщение успешно отправлено', ephemeral=True)
+    else:
+        await interaction.response.send_message(f'У вас недостаточно прав для использования этой команды!', ephemeral=True)
 try:
     client_discord.run(TOKEN)
 except Exception as e:
