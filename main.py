@@ -6,7 +6,7 @@ import os
 import logging
 import openai
 from nextcord.ext import commands, tasks
-from nextcord import Interaction, SlashOption, ButtonStyle
+from nextcord import Interaction, SlashOption, ButtonStyle, ChannelType
 from nextcord.errors import Forbidden
 from nextcord.ui import Button, View, UserSelect, Select, TextInput, Modal
 import asyncio
@@ -16,6 +16,7 @@ import shutil
 from win10toast import ToastNotifier
 import sqlite3
 from apscheduler.schedulers.asyncio import AsyncIOScheduler
+import json
 # import flet as ft
 intents = nextcord.Intents.default()
 intents.invites = True
@@ -32,6 +33,7 @@ client_discord = nextcord.Client(intents=intents)
 scheduler = AsyncIOScheduler()
 
 API_Weather = 'get your api key on openweathermap.org/api'
+API_Crypto = 'get your api key on https://pro.coinmarketcap.com/account'
 Forbidden_words = ['enter you list of forbidden words']
 guild_owner_emodji_id = 'add id of your emodji'
 guild_owner_emodji = f"<:customemoji:{guild_owner_emodji_id}>"
@@ -73,6 +75,46 @@ telegram_emodji_id = 'add id of your emodji'
 telegram_emodji = f"<:customemoji:{telegram_emodji_id}>"
 discord_emodji_id = 'add id of your emodji'
 discord_emodji = f"<:customemoji:{discord_emodji_id}>"
+link_emodji_id = 'add id of your emodji'
+link_emodji = f"<:customemoji:{link_emodji_id}>"
+BTC_emodji_id = 'add id of your emodji'
+BTC_emodji = f"<:customemoji:{BTC_emodji_id}>"
+ETH_emodji_id = 'add id of your emodji'
+ETH_emodji = f"<:customemoji:{ETH_emodji_id}>"
+DOGE_emodji_id = 'add id of your emodji'
+DOGE_emodji = f"<:customemoji:{DOGE_emodji_id}>"
+RUB_emodji_id = 'add id of your emodji'
+RUB_emodji = f"<:customemoji:{RUB_emodji_id}>"
+USD_emodji_id = 'add id of your emodji'
+USD_emodji = f"<:customemoji:{USD_emodji_id}>"
+USDT_emodji_id = 'add id of your emodji'
+USDT_emodji = f"<:customemoji:{USDT_emodji_id}>"
+BUSD_emodji_id = 'add id of your emodji'
+BUSD_emodji = f"<:customemoji:{BUSD_emodji_id}>"
+SHIB_emodji_id = 'add id of your emodji'
+SHIB_emodji = f"<:customemoji:{SHIB_emodji_id}>"
+ELON_emodji_id = 'add id of your emodji'
+ELON_emodji = f"<:customemoji:{ELON_emodji_id}>"
+AKITA_emodji_id = 'add id of your emodji'
+AKITA_emodji = f"<:customemoji:{AKITA_emodji_id}>"
+Coinmarket_emodji_id = 'add id of your emodji'
+Coinmarket_emodji = f"<:customemoji:{Coinmarket_emodji_id}>"
+Right_emodji_id = 'add id of your emodji'
+Right_emodji = f"<:customemoji:{Right_emodji_id}>"
+LTC_emodji_id = 'add id of your emodji'
+LTC_emodji = f"<:customemoji:{LTC_emodji_id}>"
+SOL_emodji_id = 'add id of your emodji'
+SOL_emodji = f"<:customemoji:{SOL_emodji_id}>"
+BNB_emodji_id = 'add id of your emodji'
+BNB_emodji = f"<:customemoji:{BNB_emodji_id}>"
+USDC_emodji_id = 'add id of your emodji'
+USDC_emodji = f"<:customemoji:{USDC_emodji_id}>"
+XRP_emodji_id = 'add id of your emodji'
+XRP_emodji = f"<:customemoji:{XRP_emodji_id}>"
+HMSTR_emodji_id = 'add id of your emodji'
+HMSTR_emodji = f"<:customemoji:{HMSTR_emodji_id}>"
+TON_emodji_id = 'add id of your emodji'
+TON_emodji = f"<:customemoji:{TON_emodji_id}>"
 admin_tickets = "Enter you're admin tickets channel id"
 link = {
     "main": "enter your link",
@@ -153,7 +195,7 @@ class Verify(Select):
             await interaction.response.send_message(f'У вас уже есть эта роль', ephemeral=True)
         else:
             await interaction.user.add_roles(verify_role, reason='Clicked Verify')
-            await interaction.response.send_message(f'{interaction.user.mention} Вам была выдана роль <@&role_id>', ephemeral=True)
+            await interaction.response.send_message(f'{interaction.user.mention} Вам была выдана роль <@&1246041998054522880>', ephemeral=True)
 
 
 class VerifyView(View):
@@ -253,7 +295,9 @@ class CloseTicketModal(Modal):
         self.add_item(self.reason)
 
     async def callback(self, interaction: Interaction):
+        logger = logging.getLogger(__name)
         reason = self.reason.value
+        logger.info(f'Пользователь {interaction.user.name} закрыл тикет с причиной {reason}')
         database_location = sqlite3.connect(f'{servername_database}_discord.db')
         cursor = database_location.cursor()
         cursor.execute(
@@ -265,7 +309,7 @@ class CloseTicketModal(Modal):
         database_location.close()
 
         channel_id = interaction.channel_id
-        admin_tickets = await interaction.guild.fetch_channel(admin_tickets)
+        admin_tickets_id = await interaction.guild.fetch_channel(admin_tickets)
         embed_channel = nextcord.Embed(title=f'Закрытие обращения', color=0xffffff)
         embed_channel.add_field(name=f'{created_since_emodji} Тикет закрыл: {interaction.user.name}',
                                 value=f'{slash_emodji} • Тикет был закрыт по причине: {reason}\n'
@@ -281,9 +325,13 @@ class CloseTicketModal(Modal):
             text=f'• {servername_to_footer} Tickets | {datetime.datetime.now().replace(microsecond=0)}',
             icon_url=interaction.guild.icon.url)
         await interaction.channel.send(embed=embed_channel)
-        await admin_tickets.send(embed=embed_admin)
+        await admin_tickets_id.send(embed=embed_admin)
         await asyncio.sleep(600)
-        await interaction.channel.delete()
+        try:
+            await interaction.channel.delete()
+        except nextcord.errors.NotFound:
+            logger.error(f'Произошла ошибка с удалением канала обращения!')
+
 
 class FeedbackModal(Modal):
     def __init__(self):
@@ -292,7 +340,9 @@ class FeedbackModal(Modal):
         self.add_item(self.feedback)
 
     async def callback(self, interaction: nextcord.Interaction):
+        logger = logging.getLogger(__name__)
         feedback = self.feedback.value
+        logger.info(f'Пользователь {interaction.user.name} оставил отзыв {feedback}')
         database_location = sqlite3.connect(f'{servername_database}_discord.db')
         cursor = database_location.cursor()
         cursor.execute(
@@ -314,7 +364,7 @@ class FeedbackModal(Modal):
         embed_admin = nextcord.Embed(title=f'Отзыв', color=0xffffff)
         embed_admin.add_field(name=f'{created_since_emodji} Отзыв оставил: {interaction.user.name}',
                               value=f'{slash_emodji} • Отзыв: {feedback}\n'
-                                    f'{created_since_emodji} Канал: <#{channel_id}>')
+                                    f'{created_since_emodji} • Канал: <#{channel_id}>')
         embed_admin.set_footer(
             text=f'• {servername_to_footer} Tickets | {datetime.datetime.now().replace(microsecond=0)}',
             icon_url=interaction.guild.icon.url)
@@ -337,6 +387,21 @@ except FileNotFoundError:
     TOKEN = input("Введите ваш токен Discord: ")
     with open('token.txt', 'w') as f:
         f.write(TOKEN)
+
+
+def read_json(json_file):
+    try:
+        with open(json_file, 'r', encoding='utf-8') as file:
+            return json.load(file)
+    except FileNotFoundError:
+        return None
+    except json.JSONDecodeError:
+        return None
+
+
+def giveaway_add(json_file, data):
+    with open(json_file, 'w', encoding='utf-8') as file:
+        json.dump(data, file, indent=4)
 
 
 def win_notification(title, message):
@@ -440,6 +505,30 @@ async def warn(interaction, guild_id, user_id, user_name, guild):
 
 
 @client_discord.event
+async def on_reaction_add(reaction: nextcord.Reaction, user: nextcord.User):
+    if user.bot:
+        return
+
+    json_file = 'jsons/giveaway.json'
+    giveaways = read_json(json_file)
+
+    for giveaway in giveaways:
+        if giveaway['message_id'] == reaction.message.id and reaction.emoji == '🎉':
+            users = await reaction.users().flatten()
+            users = [user for user in users if not user.bot]
+
+            if users:
+                winner = random.choice(users)
+                await reaction.message.channel.send(
+                    f'Поздравляем {winner.mention}, вы выиграли розыгрыш {giveaway["name"]}!')
+            else:
+                await reaction.message.channel.send('Участвующих пользователей нет!')
+            giveaways.remove(giveaway)
+            giveaway_add(json_file, giveaways)
+            break
+
+
+@client_discord.event
 async def on_ready():
     print(f'{client_discord.user} запущен')
     print(' ')
@@ -494,6 +583,9 @@ async def on_ready():
 @client_discord.event
 async def on_disconnect():
     scheduler.shutdown()
+    print(f'Бот {client_discord.user} остановлен!, перезапуск')
+    await asyncio.sleep(10)
+    await client_discord.connect(reconnect=False)
 
 
 @client_discord.event
@@ -526,10 +618,9 @@ async def on_member_join(member):
     else:
         embed_server.set_thumbnail(url='https://cdn.discordapp.com/embed/avatars/0.png')
 
-
     embed_server.add_field(name='Информация', value='Ищи всю нужную информацию в канале "информация"')
-    embed.set_footer(text=f'• {servername_to_footer} Welcome | {datetime.datetime.now().replace(microsecond=0)}',
-                     icon_url=interaction.guild.icon.url)
+    embed_server.set_footer(text=f'• {servername_to_footer} Welcome | {datetime.datetime.now().replace(microsecond=0)}',
+                            icon_url=member.guild.icon.url)
 
     embed_user = nextcord.Embed(
         title=f'Привет, благодарим за присоединение к серверу "{servername_database}"',
@@ -540,16 +631,18 @@ async def on_member_join(member):
     else:
         embed_user.set_thumbnail(url='https://cdn.discordapp.com/embed/avatars/0.png')
     embed_user.add_field(name='Информация', value=f'Всю необходимую информацию вы можете найти в канале "информация".')
-    embed.set_footer(text=f'• {servername_to_footer} Welcome | {datetime.datetime.now().replace(microsecond=0)}',
-                     icon_url=interaction.guild.icon.url)
+    embed_user.set_footer(text=f'• {servername_to_footer} Welcome | {datetime.datetime.now().replace(microsecond=0)}',
+                          icon_url=member.guild.icon.url)
 
     channel = nextcord.utils.get(member.guild.channels, name='добро-пожаловать')
     if channel:
         await channel.send(embed=embed_server)
     else:
         logger.error(f'Канал admin не найден, укажите верный канал!')
-
-    await member.send(embed=embed_user)
+    try:
+        await member.send(embed=embed_user)
+    except nextcord.errors.HTTPException:
+        logger.warning(f'Произошла ошибка отправки сообщения пользователю, скорее всего пользователь является ботом или у него закрыты личные сообщения!')
 
 
 @client_discord.event
@@ -950,13 +1043,18 @@ async def help(interaction: Interaction,
     logger = logging.getLogger(__name__)
     if rank == 'default':
         logger.info(f'Пользователь {interaction.user.mention} вызвал команду для вывода списка команд. Ранг: Участник')
-        embed = nextcord.Embed(title="Доступные команды сервера", color=0xffffff)
-        embed.add_field(name=f"{created_since_emodji} Ранг: Участник",
-                        value=f"• Информация о участнике: /info Участник \n"
-                              f"• Аватар участника: /avatar Участник \n"
-                              f"• Информация о погоде: /weather Город(любой)\n"
-                              f"• Вывести это сообщение: /help",
-                        inline=False)
+        embed = nextcord.Embed(title="Доступные команды сервера", color=0x999999)
+        embed.add_field(
+            name=f'Основные',
+            value=f'**/help**\n'
+                  f'**/avatar**\n'
+                  f'**/weather**\n'
+                  f'**/info**\n'
+                  f'**/links**\n'
+                  f'**/author-links**\n'
+                  f'**/invites**\n',
+            inline=True
+        )
         embed.set_footer(text=f'• {servername_to_footer} Help | {datetime.datetime.now().replace(microsecond=0)}',
                          icon_url=interaction.guild.icon.url)
         await interaction.response.send_message(embed=embed, ephemeral=True)
@@ -964,24 +1062,47 @@ async def help(interaction: Interaction,
         if nextcord.utils.get(interaction.user.roles, name='Администратор') is not None:
             logger.info(
                 f'Пользователь {interaction.user.mention} вызвал команду для вывода списка команд. Ранг: Модерация')
-            embed = nextcord.Embed(title="Доступные команды сервера", color=0xffffff)
+            embed = nextcord.Embed(title=f"{created_since_emodji} Доступные команды сервера. Ранг модерация {created_since_emodji}",
+                                   description=f'Бот использует слэш-команды (/), Ниже представлены доступные команды:',
+                                   color=0x999999)
             embed.add_field(
-                name=f"{created_since_emodji} Ранг: Модерация",
-                value=f"• Блокировка: /ban Нарушитель причина \n"
-                      f"• Разблокировка: /unban Нарушитель причина \n"
-                      f"• Удаление: /kick Нарушитель причина \n"
-                      f"• Отчистка: /clear количество(можно любым количеством либо 0 для удаления всего) \n"
-                      f"• Список всех учатников: /members \n"
-                      f"• Вывод информации о сервере: /serverinfo \n"
-                      f"• Заглушение участника: /mute Нарушитель причина"f" \n"
-                      f"• Разглушение участника: /unmute Нарушитель причина \n"
-                      f"• Информация о участнике: /info Участник \n"
-                      f"• Аватар участника: /avatar Участник \n"
-                      f"• Информация о погоде: /weather Город(любой) \n"
-                      f"• Вывод этого сообщения: /help mod\n"
-                      f"• Отправить сообщение: /say (сообщение)\n"
-                      f"• Действия с логами: /log (download, archive, save)",
-                inline=False)
+                name=f'Основные',
+                value=f'**/help**\n'
+                      f'**/avatar**\n'
+                      f'**/weather**\n'
+                      f'**/info**\n'
+                      f'**/links**\n'
+                      f'**/author-links**\n'
+                      f'**/invites**\n',
+                inline=True
+            )
+            embed.add_field(
+                name=f'Администрация\n',
+                value=f'**/kick**\n'
+                      f'**/ban**\n'
+                      f'**/unban**\n'
+                      f'**/mute**\n'
+                      f'**/unmute**\n'
+                      f'**/warn**\n'
+                      f'**/mute-list**\n'
+                      f'**/ban-list**',
+                inline=True
+            )
+            embed.add_field(
+                name=f'Другое',
+                value=f'**/clear**\n'
+                      f'**/members**\n'
+                      f'**/server-info**\n'
+                      f'**/say**\n'
+                      f'**/log**\n'
+                      f'**/database**\n'
+                      f'**/channel-info**\n'
+                      f'**/bot-info**\n'
+                      f'**/verify-menu**\n'
+                      f'**/ticket-menu**\n'
+                      f'**/getrole-menu**\n',
+                inline=True
+            )
             embed.set_footer(text=f'• {servername_to_footer} Help | {datetime.datetime.now().strftime("%Y-%m-%d %H:%M")}',
                              icon_url=interaction.guild.icon.url)
             await interaction.response.send_message(embed=embed, ephemeral=True)
@@ -1138,7 +1259,7 @@ async def info(interaction: Interaction, member: nextcord.Member,
     excepted_roles = ["@everyone", "Member"]
     role_count = len([role.name for role in member.roles if role.name not in excepted_roles])
     roles = member.roles
-    role_names = [role.name for role in roles if role.name not in excepted_roles]
+    role_names = [f'<@&{role.id}>' for role in roles if role.name not in excepted_roles]
     role_list = ' '.join(role_names)
     discriminator = member.discriminator
     if discriminator == 0:
@@ -1151,7 +1272,7 @@ async def info(interaction: Interaction, member: nextcord.Member,
     embed.add_field(name="ID:", value=member.id, inline=True)
     embed.add_field(name="Дата присоеденения:", value=f'<t:{int(member.joined_at.timestamp())}:R>', inline=True)
     embed.add_field(name='Дата создания профиля: ', value=f'<t:{int(member.created_at.timestamp())}:R>')
-    embed.add_field(name="Роль:", value=member.top_role.name, inline=True)
+    embed.add_field(name="Роль:", value=f'<@&{member.top_role.id}>', inline=True)
     embed.add_field(name="Роли:", value=role_list)
     embed.add_field(name='Количество ролей:', value=role_count)
     embed.set_footer(text=f'• {servername_to_footer} Info | {datetime.datetime.now().strftime("%Y-%m-%d %H:%M")}',
@@ -1610,6 +1731,525 @@ async def invite(interaction: Interaction):
         text=f'• {servername_to_footer} Invites | {datetime.datetime.now().strftime("%Y-%m-%d %H:%M")}',
         icon_url=interaction.guild.icon.url)
     await interaction.response.send_message(embed=embed, ephemeral=True)
+
+
+@client_discord.slash_command(name='bot-info', description='Вывод информации о боте')
+async def info(interaction: Interaction):
+    logger = logging.getLogger(__name__)
+    logger.info(f'Пользователь {interaction.user.name} использовал команду для вывода ')
+    if nextcord.utils.get(interaction.user.roles, name='Администратор'):
+        member = interaction.guild.me
+        excepted_roles = ["@everyone", "Member"]
+        role_count = len([f'<@&{role.id}>' for role in member.roles if role.name not in excepted_roles])
+        roles = member.roles
+        role_names = [role.name for role in roles if role.name not in excepted_roles]
+        role_list = ' '.join(role_names)
+        discriminator = member.discriminator
+        if discriminator == 0:
+            discriminator = None
+        embed = nextcord.Embed(title=f"Информация о {member.name}", color=0xffffff)
+        embed.set_thumbnail(url=member.avatar.url)
+        embed.add_field(name="Никнейм:", value=member.name, inline=True)
+        embed.add_field(name="Профиль:", value=member.mention, inline=True)
+        embed.add_field(name="Полное имя:", value=f'{member.name}#{discriminator}', inline=True)
+        embed.add_field(name="ID:", value=member.id, inline=True)
+        embed.add_field(name="Дата присоеденения:", value=f'<t:{int(member.joined_at.timestamp())}:R>', inline=True)
+        embed.add_field(name='Дата создания профиля: ', value=f'<t:{int(member.created_at.timestamp())}:R>')
+        embed.add_field(name="Роль:", value=f'<@&{member.top_role.id}>', inline=True)
+        embed.add_field(name="Роли:", value=role_list)
+        embed.add_field(name='Количество ролей:', value=role_count)
+        embed.set_footer(text=f'• {servername_to_footer} Info | {datetime.datetime.now().strftime("%Y-%m-%d %H:%M")}',
+                         icon_url=interaction.guild.icon.url)
+        await interaction.response.send_message(embed=embed, ephemeral=True)
+
+
+@client_discord.slash_command(name='channel-info', description='Вывод информацию о указанном канале')
+async def channel_info(interaction: Interaction,
+                       channel: nextcord.abc.GuildChannel = SlashOption(
+                           description='Выводит информацию о выбранном канале',
+                           channel_types=[ChannelType.text, ChannelType.voice, ChannelType.category, ChannelType.forum, ChannelType.stage_voice]
+                       )):
+    logger = logging.getLogger(__name__)
+    logger.info(f'Пользователь {interaction.user.name} использовал команду для информации о {channel} канале')
+    if nextcord.utils.get(interaction.user.roles, name='Администратор'):
+        embed = nextcord.Embed(title=f'{created_since_emodji} Канал {channel.name}', color=0xffffff)
+        embed.add_field(name='Channel ID:', value=channel.id, inline=True)
+        embed.add_field(name='Channel Name:', value=channel.name, inline=True)
+        embed.add_field(name='Channel Type:', value=channel.type, inline=True)
+        if isinstance(channel, nextcord.TextChannel):
+            embed.add_field(name='Topic:', value=channel.topic or 'No topic found', inline=True)
+            embed.add_field(name='NSFW:', value=channel.is_nsfw(), inline=True)
+        if isinstance(channel, nextcord.VoiceChannel):
+            embed.add_field(name='Bitrate:', value=channel.bitrate, inline=True)
+            embed.add_field(name='User Limit:', value=channel.user_limit, inline=True)
+            embed.add_field(name='Quality:', value=channel.video_quality_mode, inline=True)
+        if isinstance(channel, nextcord.ForumChannel):
+            embed.add_field(name='Tags:', value='\n'.join([f'{tags.name} ({tags.id})' for tags in channel.available_tags]), inline=True)
+            embed.add_field(name='NSFW:', value=channel.is_nsfw(), inline=True)
+        if isinstance(channel, nextcord.CategoryChannel):
+            embed.add_field(name='Channels:', value='\n'.join([f'{channels.name} ({channels.type})' for channels in channel.channels]), inline=True)
+            embed.add_field(name='Position:', value=channel.position, inline=True)
+        if isinstance(channel, nextcord.StageChannel):
+            embed.add_field(name='User Limit:', value=channel.user_limit, inline=True)
+            embed.add_field(name='Bitrate:', value=channel.bitrate, inline=True)
+        embed.add_field(name='Created At', value=channel.created_at.strftime("%m-%d %H:%M"), inline=True)
+        embed.set_footer(text=f'• {servername_to_footer} Info | {datetime.datetime.now().strftime("%Y-%m-%d %H:%M")}',
+                         icon_url=interaction.guild.icon.url)
+        await interaction.response.send_message(embed=embed, ephemeral=True)
+    else:
+        await interaction.response.send_message(f'У вас недостаточно прав для использования этой команды!', ephemeral=True)
+
+
+@client_discord.slash_command(name='giveaway')
+async def giveaway(interaction: Interaction,
+                   action: str = SlashOption(
+                       description='Выберите что хотите сделать',
+                       choices=['create', 'delete', 'list']
+                   ),
+                   name: str = SlashOption(
+                       description='Введите название розыгрыша',
+                       default=None
+                   ),
+                   text: str = SlashOption(
+                       description='Введите текст для правил участния',
+                       default=None
+                   ),
+                   prize: str = SlashOption(
+                       description='Введите название приза',
+                       default=None
+                   ),
+                   expires_at: int = SlashOption(
+                       description='Введите через сколько дней розыгрыш будет окончен',
+                       default=None
+                   )):
+    if nextcord.utils.get(interaction.user.roles, name='Администратор'):
+        if action == 'create':
+            if not any(param is None for param in [name, text, prize, expires_at]):
+                time_delta = datetime.timedelta(days=expires_at)
+                new_giveaway = {
+                    'name': name,
+                    'text': text,
+                    'prize': prize,
+                    'created_at': datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S'),
+                    'expires_at': (datetime.datetime.now() + time_delta).strftime('%Y-%m-%d %H:%M:%S')
+                }
+                json_file = 'jsons/giveaway.json'
+                data = read_json(json_file)
+                if not isinstance(data, list):
+                    data = []
+                data.append(new_giveaway)
+                giveaway_add(json_file, data)
+
+                embed = nextcord.Embed(title='Розыгрыш', color=0xffffff)
+                embed.add_field(name='Название:', value=name)
+                embed.add_field(name='Условия:', value=text + '\nВсем удачи!')
+                embed.add_field(name='Приз:', value=prize)
+                embed.add_field(name='Окончание:',
+                                value=f'<t:{int((datetime.datetime.now() + time_delta).timestamp())}:F>')
+
+                message = await interaction.channel.send(embed=embed)
+
+                await message.add_reaction('🎉')
+
+                giveaway_data = {
+                    'message_id': message.id,
+                    'channel_id': interaction.channel.id,
+                    'name': name
+                }
+                giveaways = read_json('jsons/giveaways.json')
+                giveaways.append(giveaway_data)
+                giveaway_add('jsons/giveaways.json', giveaways)
+            else:
+                await interaction.response.send_message(f'Заполните все данные для создания розыгрыша!', ephemeral=True)
+
+        elif action == 'delete':
+            json_file = 'jsons\\giveaway.json'
+            data = read_json(json_file)
+            data = [item for item in data if item.get('name') != name]
+            giveaway_add(json_file, data)
+            await interaction.response.send_message(f'Розыгрыш {name} удалён', ephemeral=True)
+        elif action == 'list':
+            json_file = 'jsons\\giveaway.json'
+            json_data = read_json(json_file)
+            embed = nextcord.Embed(title='Список доступных розыгрышей:', color=0xffffff)
+            count = 0
+            for data in json_data:
+                count += 1
+                embed.add_field(name=f'Номер:',
+                                value=count)
+                embed.add_field(name='Название:',
+                                value=data.get('name', 'Not found'))
+                embed.add_field(name='Условия (текст)',
+                                value=data.get('text', 'Not found'))
+                embed.add_field(name='Награда:',
+                                value=data.get('prize', 'Not found'))
+                embed.add_field(name='Создано:',
+                                value=data.get('created_at', 'Not found'))
+                embed.add_field(name='Окончится:',
+                                value=data.get('expires_at', 'Not found'))
+            await interaction.response.send_message(embed=embed, ephemeral=True)
+
+    else:
+        await interaction.response.send_message(f'У вас не достаточно прав для использования этой команды', ephemeral=True)
+
+
+@client_discord.slash_command(name='crypto-difference', description='Выводит информацию о криптовалюте')
+async def crypto_difference(interaction: Interaction,
+                 crypto_currency: str = SlashOption(
+                     name='crypto',
+                     description='Введите название криптовалюты в формате: USDT, BTC, или ETH',
+                     choices=['BTC', 'ETH', 'DOGE', 'USDT', 'BUSD', 'SHIB', 'ELON', 'AKITA']
+                 ),
+                 convert_currency: str = SlashOption(
+                     name='convert',
+                     description='Введите валюту в которую нужно конвертировать криптовалюту. Формат: UST, BTC, RUB',
+                     choices=['BTC', 'ETH', 'DOGE', 'USDT', 'RUB', 'USD', 'BUSD', 'SHIB', 'ELON', 'AKITA']
+                 )):
+    if crypto_currency == 'USDT':
+        crypto_currency_emoji = USDT_emodji
+    elif crypto_currency == 'BTC':
+        crypto_currency_emoji = BTC_emodji
+    elif crypto_currency == 'DOGE':
+        crypto_currency_emoji = DOGE_emodji
+    elif crypto_currency == 'ETH':
+        crypto_currency_emoji = ETH_emodji
+    elif crypto_currency == 'BUSD':
+        crypto_currency_emoji = BUSD_emodji
+    elif crypto_currency == 'SHIB':
+        crypto_currency_emoji = SHIB_emodji
+    elif crypto_currency == 'ELON':
+        crypto_currency_emoji = ELON_emodji
+    elif crypto_currency == 'AKITA':
+        crypto_currency_emoji = AKITA_emodji
+    if convert_currency == 'USD':
+        convert_currency_emoji = USD_emodji
+    elif convert_currency == 'USDT':
+        convert_currency_emoji = USDT_emodji
+    elif convert_currency == 'BTC':
+        convert_currency_emoji = BTC_emodji
+    elif convert_currency == 'ETH':
+        convert_currency_emoji = ETH_emodji
+    elif convert_currency == 'DOGE':
+        convert_currency_emoji = DOGE_emodji
+    elif convert_currency == 'RUB':
+        convert_currency_emoji = RUB_emodji
+    elif convert_currency == 'BUSD':
+        convert_currency_emoji = BUSD_emodji
+    elif convert_currency == 'SHIB':
+        convert_currency_emoji = SHIB_emodji
+    elif convert_currency == 'ELON':
+        convert_currency_emoji = ELON_emodji
+    elif convert_currency == 'AKITA':
+        convert_currency_emoji = AKITA_emodji
+    url = f"https://pro-api.coinmarketcap.com/v1/cryptocurrency/quotes/latest"
+    parameters = {
+        'symbol': crypto_currency,
+        'convert': convert_currency
+    }
+    headers = {
+        'Accepts': 'application/json',
+        'X-CMC_PRO_API_KEY': API_Crypto,
+    }
+    response = requests.get(url, headers=headers, params=parameters)
+    data = response.json()
+    price_difference = data['data'][crypto_currency]['quote'][convert_currency]['price']
+    change_24h = data['data'][crypto_currency]['quote'][convert_currency]['percent_change_24h']
+    embed = nextcord.Embed(title=f'{created_since_emodji}Информация о криптовалюте', color=0xffffff)
+    embed.add_field(name=f'{slash_emodji} Соотношение {crypto_currency} к {convert_currency}',
+                    value=f'{crypto_currency_emoji} Выбранная валюта: {crypto_currency}\n'
+                          f"🔃 Разница: {price_difference:,.1f}\n"
+                          f'{convert_currency_emoji} Конвертировать в: {convert_currency}\n'
+                          f'🔄 Изменения за 24 часа: {change_24h}%')
+    embed.set_footer(
+        text=f'• {servername_to_footer} Crypto | https://coinmarketcap.com/ | {datetime.datetime.now().strftime("%Y-%m-%d %H:%M")}',
+        icon_url='https://logos-world.net/wp-content/uploads/2023/02/CoinMarketCap-Logo.png')
+    await interaction.response.send_message(embed=embed, ephemeral=True)
+
+
+@client_discord.slash_command(name='crypto-trending', description='Выводит список последних добавленных токенов на coinmarketcap')
+async def crypto_trending(interaction: Interaction,
+                          limit: int = SlashOption(
+                            description='Выберите количество токенов в списке максимальное количество - 10',
+                            choices=['1', '2', '3', '4', '5', '6', '7', '8', '9', '10'],
+                            default=5
+                          )):
+    url = "https://pro-api.coinmarketcap.com/v1/cryptocurrency/listings/latest"
+    headers = {
+        'Accepts': 'application/json',
+        'X-CMC_PRO_API_KEY': API_Crypto,
+    }
+
+    parameters = {
+        'sort': 'volume_24h',
+        'limit': limit
+    }
+
+    response = requests.get(url, headers=headers, params=parameters)
+    data = response.json()
+    if 'data' not in data:
+        await interaction.response.send_message(f"Произошла ошибка при получении данных: {data}", ephemeral=True)
+        return
+
+    embed = nextcord.Embed(title=f'Топ {limit} по востребованности на (https://coinmarketcap.com/)', color=0xffffff)
+    for crypto in data['data']:
+        tags = crypto.get("tags", [])
+        tags_str = ', '.join(tags)
+        embed.add_field(name=f'{created_since_emodji} Название: {crypto["name"]}',
+                        value=f'{created_since_emodji} ID: {crypto["id"]}\n'
+                              f'{created_since_emodji} Символ: {crypto["symbol"]}\n'
+                              f'{created_since_emodji} Теги: {tags_str if tags else "Нет тегов"}\n'
+                              f'{created_since_emodji} Дата добавления: {crypto.get("date_added", "N/A").split("T")[0]}')
+        embed.set_footer(
+            text=f'• {servername_to_footer} Crypto | https://coinmarketcap.com/ | {datetime.datetime.now().strftime("%Y-%m-%d %H:%M")}',
+            icon_url='https://logos-world.net/wp-content/uploads/2023/02/CoinMarketCap-Logo.png')
+    await interaction.response.send_message(embed=embed, ephemeral=True)
+
+
+@client_discord.slash_command(name='crypto-info', description='Вывод информацию о выбранной криптовалюте')
+async def crypto_info(interaction: Interaction,
+                      crypto: str = SlashOption(
+                          description='Выберите криптовалюту о которой хотите получить информацию',
+                          choices=['BTC', 'ETH', 'DOGE', 'USDT', 'BUSD', 'SHIB', 'ELON', 'AKITA', 'SOL', 'BNB', 'USDC', 'XRP', 'TON', 'LTC']
+                      )):
+    if crypto is None:
+        await interaction.response.send_message(f'Выберите криптовалю!', ephemeral=True)
+        return
+
+    url = 'https://pro-api.coinmarketcap.com/v1/cryptocurrency/quotes/latest'
+    if crypto == 'USDT':
+        crypto_emoji = USDT_emodji
+    elif crypto == 'BTC':
+        crypto_emoji = BTC_emodji
+    elif crypto == 'DOGE':
+        crypto_emoji = DOGE_emodji
+    elif crypto == 'ETH':
+        crypto_emoji = ETH_emodji
+    elif crypto == 'BUSD':
+        crypto_emoji = BUSD_emodji
+    elif crypto == 'SHIB':
+        crypto_emoji = SHIB_emodji
+    elif crypto == 'ELON':
+        crypto_emoji = ELON_emodji
+    elif crypto == 'AKITA':
+        crypto_emoji = AKITA_emodji
+    elif crypto == 'SOL':
+        crypto_emoji = SOL_emodji
+    elif crypto == 'BNB':
+        crypto_emoji = BNB_emodji
+    elif crypto == 'USDC':
+        crypto_emoji = USDC_emodji
+    elif crypto == 'XRP':
+        crypto_emoji = XRP_emodji
+    elif crypto == 'TON':
+        crypto_emoji = TON_emodji
+    elif crypto == 'LTC':
+        crypto_emoji = LTC_emodji
+    parameters = {
+        'symbol': crypto,
+        'convert': 'USD'
+    }
+
+    headers = {
+        'Accepts': 'application/json',
+        'X-CMC_PRO_API_KEY': API_Crypto
+    }
+    response = requests.get(url, headers=headers, params=parameters)
+    data = response.json()
+    crypto_data = data['data'][crypto]
+    embed = nextcord.Embed(title=f'{created_since_emodji} Информация о криптовалюте', color=0xffffff)
+    embed.add_field(name=f'{crypto_emoji} {crypto_data["name"]}',
+                    value=f'{crypto_emoji} Symbol: {crypto_data["symbol"]}\n'
+                          f'{crypto_emoji} ID: {crypto_data["id"]}\n'
+                          f'{Right_emodji} Price: ${crypto_data["quote"]["USD"]["price"]:.2f}\n'
+                          f'{Right_emodji} Market cap: ${crypto_data["quote"]["USD"]["market_cap"]:.2f}\n'
+                          f'{Right_emodji} Volume 24h: ${crypto_data["quote"]["USD"]["volume_24h"]:.2f}\n'
+                          f'{Right_emodji} % Change 24h: {crypto_data["quote"]["USD"]["percent_change_24h"]:.2f}%\n'
+                          f'{Right_emodji} Circulating Supply: {crypto_data["circulating_supply"]}\n'
+                          f'{Right_emodji} Page: https://coinmarketcap.com/currencies/{crypto_data["name"]}/')
+    embed.set_footer(
+        text=f'• {servername_to_footer} Crypto | https://coinmarketcap.com/ | {datetime.datetime.now().strftime("%Y-%m-%d %H:%M")}',
+        icon_url='https://logos-world.net/wp-content/uploads/2023/02/CoinMarketCap-Logo.png')
+    await interaction.response.send_message(embed=embed, ephemeral=True)
+
+
+@client_discord.slash_command(name='crypto-list', description='Выводит список всех доступных криптовалют')
+async def crypto_list(interaction: Interaction,
+                      all: bool = SlashOption(
+                          description='Все ли должны выводится криптовалюты?',
+                          choices=['True', 'False'],
+                          default=False
+                      )):
+    if all is False:
+        embed = nextcord.Embed(title=f'{created_since_emodji} Список доступных криптовалют', description=f'{created_since_emodji} **Жирным** текстом выделены основные криптовалюты', color=0xffffff)
+        embed.add_field(name=f'{text_emodji} Список',
+                        value=f'{BTC_emodji} **BTC** - **Bitcoin**\n'
+                              f'{LTC_emodji} **LTC** - **Litecoin**\n'
+                              f'{ETH_emodji} **ETH** - **Ethereum**\n'
+                              f'{USDT_emodji} **USDT** - **Tether** **USD**\n'
+                              f'{USDC_emodji} USDC - USDC\n'
+                              f'{BNB_emodji} BNB - BNB\n'
+                              f'{TON_emodji} **TON** - **Toncoin**\n'
+                              f'{DOGE_emodji} DOGE - Dogecoin\n'
+                              f'{BUSD_emodji} **BUSD** - **Binance USD**\n'
+                              f'{ELON_emodji} ELON - ELON\n'
+                              f'{AKITA_emodji} AKITA - Akita Inu\n'
+                              f'{SHIB_emodji} SHIB - Shiba Inu\n'
+                              f'{XRP_emodji} **XRP** - **XRP**'
+                        )
+        embed.set_footer(
+            text=f'• {servername_to_footer} Crypto | https://coinmarketcap.com/ | {datetime.datetime.now().strftime("%Y-%m-%d %H:%M")}',
+            icon_url='https://logos-world.net/wp-content/uploads/2023/02/CoinMarketCap-Logo.png')
+        await interaction.response.send_message(embed=embed, ephemeral=True)
+    if all is True:
+        url = 'https://pro-api.coinmarketcap.com/v1/cryptocurrency/listings/latest'
+        headers = {
+            'Accepts': 'application/json',
+            'X-CMC_PRO_API_KEY': API_Crypto
+        }
+
+        response = requests.get(url, headers=headers)
+        data = response.json()
+
+        if response.status_code == 200:
+            cryptocurrencies = [f"{created_since_emodji} **{crypto['name']} - {crypto['symbol']} ({crypto.get('date_added', 'N/A').split('T')[0]}) [{crypto['quote']['USD']['percent_change_24h']:.2f}%]**"
+                                for crypto in data['data']]
+        else:
+            interaction.response.send_message(f'Ошибка запроса. Код: {response.status_code}')
+        embed = nextcord.Embed(title=f'{created_since_emodji} Список доступных криптовалют',
+                               description=f'\n'.join(cryptocurrencies[:50]),
+                               color=0xffffff)
+        embed.set_footer(
+            text=f'• {servername_to_footer} Crypto | https://coinmarketcap.com/ | {datetime.datetime.now().strftime("%Y-%m-%d %H:%M")}',
+            icon_url='https://logos-world.net/wp-content/uploads/2023/02/CoinMarketCap-Logo.png')
+        await interaction.response.send_message(embed=embed, ephemeral=True)
+
+
+@client_discord.slash_command(name='crypto', description='Выводит список команд для криптовалюты')
+async def crypto(interaction: Interaction):
+    embed = nextcord.Embed(title='Помощь по использованию команд с заголовком crypto', color=0xffffff)
+    embed.add_field(name=f'Использование: Crypto-info',
+                    value=f'{created_since_emodji} /crypto-info crypto:x\n'
+                          f'{created_since_emodji} x - Название криптовалюты о которой вы хотите получить информацию\n'
+                          f'{created_since_emodji} Выбираете криптовалюту из списка и получаете информацию\n',
+                    inline=False)
+    embed.add_field(name=f'Использование: Crypto-exchange',
+                    value=f'{created_since_emodji} /crypto-exchange name:x\n'
+                          f'{created_since_emodji} x - Название криптобиржи о которой вы хотите получить информацию\n'
+                          f'{created_since_emodji} Вводить биржу самостоятельно lowercase типом. Пример: binance',
+                    inline=False)
+    embed.add_field(name=f'Использование: Crypto-list',
+                    value=f'{created_since_emodji} /crypto-list all:True, False\n'
+                          f'{created_since_emodji} True - Выведет список из 50 криптовалют\n'
+                          f'{created_since_emodji} False - Выведет список из доступных в /crypto-info',
+                    inline=False)
+    embed.add_field(name=f'Использование: Crypto-difference',
+                    value=f'{created_since_emodji} /crypto-difference crypto:x convert:y\n'
+                          f'{created_since_emodji} x - название криптовалюты из которой вы хотите преобразовать валюту\n'
+                          f'{created_since_emodji} y - название валюты в которую вы хотите преобразовать первую',
+                    inline=False)
+    embed.add_field(name=f'{created_since_emodji} Использование: Crypto-image',
+                    value=f'{created_since_emodji} /crypto image:id\n'
+                          f'{created_since_emodji} id - введите айди криптовалюты для картинки\n'
+                          f'{created_since_emodji} получить его можно в /crypto-info')
+    if nextcord.utils.get(interaction.user.roles, name='Администратор'):
+        embed.add_field(name=f'{created_since_emodji} Использование: Crypto-admin',
+                        value=f'{created_since_emodji} /crypto-admin\n'
+                              f'{created_since_emodji} Выведет текущее состояние api ключа',
+                        inline=False)
+    await interaction.response.send_message(embed=embed, ephemeral=True)
+
+
+@client_discord.slash_command(name='crypto-admin', description='Выводит информацию о действующем API ключе')
+async def crypto_admin(interaction: Interaction):
+    url = 'https://pro-api.coinmarketcap.com/v1/key/info'
+    headers = {
+        'Accepts': 'application/json',
+        'X-CMC_PRO_API_KEY': API_Crypto
+    }
+    response = requests.get(url, headers=headers)
+    data = response.json()
+    crypto_status = data['status']
+    crypto_data = data['data']
+    embed = nextcord.Embed(title=f'Api key: {API_Crypto}', color=0xffffff)
+    embed.add_field(name=f'{created_since_emodji} Информация:',
+                    value=f'{created_since_emodji} Время запроса: <t:{int(datetime.datetime.fromisoformat(crypto_status["timestamp"].replace("Z", "")).timestamp())}:R>(Время UTC+4)\n'
+                          f'{created_since_emodji} Длительность ответа: {crypto_status["elapsed"]} сек.\n'
+                          f'{created_since_emodji} Лимит токенов (месяц): {crypto_data["plan"]["credit_limit_monthly"]}\n'
+                          f'{created_since_emodji} Сброс токенов (через сколько): {crypto_data["plan"]["credit_limit_monthly_reset"]}\n'
+                          f'{created_since_emodji} Сброс токенов (когда): <t:{int(datetime.datetime.fromisoformat(crypto_data["plan"]["credit_limit_monthly_reset_timestamp"].replace("Z", "")).timestamp())}:R>\n'
+                          f'{created_since_emodji} Лимит запросов (минута): {crypto_data["plan"]["rate_limit_minute"]}\n'
+                          f'{created_since_emodji} Осталось токенов (месяц): {crypto_data["usage"]["current_month"]["credits_left"]}\n'
+                          f'{created_since_emodji} Использованно токенов (сегодня): {crypto_data["usage"]["current_day"]["credits_used"]}\n'
+                          f'{created_since_emodji} Использованно токенов (месяц): {crypto_data["usage"]["current_month"]["credits_used"]}')
+    embed.set_footer(
+        text=f'• {servername_to_footer} Crypto | https://coinmarketcap.com/ | {datetime.datetime.now().strftime("%Y-%m-%d %H:%M")}',
+        icon_url='https://logos-world.net/wp-content/uploads/2023/02/CoinMarketCap-Logo.png')
+    await interaction.response.send_message(embed=embed, ephemeral=True)
+
+
+@client_discord.slash_command(name='crypto-exchange',
+                              description='Выводит информацию о выбранной криптобирже')
+async def crypto_exchange(interaction: Interaction,
+                          name: str = SlashOption(
+                              description='Введите название криптобиржи. Пример: binance. Нельзя использовать заглавные буквы. '
+                          )):
+    url = 'https://pro-api.coinmarketcap.com/v1/exchange/info'
+    headers = {
+        'Accepts': 'application/json',
+        'X-CMC_PRO_API_KEY': API_Crypto
+    }
+    params = {
+        'slug': name
+    }
+    response = requests.get(url, headers=headers, params=params)
+    data = response.json()
+    try:
+        exchange_data = data['data'][name]
+    except KeyError:
+        await interaction.response.send_message(f'Вы ввели неверное название биржи. Введено: {name}, попробуйте ещё раз', ephemeral=True)
+        return
+    embed = nextcord.Embed(title=f'{created_since_emodji} Криптобиржа: {exchange_data["name"]}', color=0xffffff)
+    embed.set_thumbnail(url=exchange_data['logo'])
+    embed.add_field(name=f'{created_since_emodji} Основные данные',
+                    value=f'{created_since_emodji} Название: {exchange_data["name"]}\n'
+                          f'{created_since_emodji} ID: {exchange_data["id"]}\n'
+                          f'{created_since_emodji} Lowercase: {exchange_data["slug"]}\n'
+                          f'{created_since_emodji} Валюты: {", ".join(exchange_data["fiats"])}\n'
+                          f'{created_since_emodji} Дата запуска: <t:{int(datetime.datetime.fromisoformat(exchange_data["date_launched"].replace("Z", "")).timestamp())}:R>\n'
+                          f'{created_since_emodji} Посещений в неделю: {exchange_data["weekly_visits"]:,.0f}\n'
+                          f'{created_since_emodji} Объём торгов ежедневно (USD): {exchange_data["spot_volume_usd"]:,.1f}\n'
+                          f'{created_since_emodji} Последнее обновление торгов: <t:{int(datetime.datetime.fromisoformat(exchange_data["spot_volume_last_updated"].replace("Z", "")).timestamp())}:R>')
+    embed.add_field(name='Ссылки',
+                    value=f'{link_emodji} Чат: [Тык]({"".join(exchange_data["urls"]["chat"])})\n'
+                          f'{link_emodji} Сайт: [Тык]({"".join(exchange_data["urls"]["website"])})\n'
+                          f'{link_emodji} Твиттер (X): [Тык]({"".join(exchange_data["urls"]["twitter"])})\n'
+                          f'{link_emodji} Политика комиссии: [Тык]({"".join(exchange_data["urls"]["fee"])})')
+    embed.set_footer(
+        text=f'• {servername_to_footer} Crypto | https://coinmarketcap.com/ | {datetime.datetime.now().strftime("%Y-%m-%d %H:%M")}',
+        icon_url='https://logos-world.net/wp-content/uploads/2023/02/CoinMarketCap-Logo.png')
+    await interaction.response.send_message(embed=embed, ephemeral=True)
+
+
+@client_discord.slash_command(name='crypto-image', description='Выводит картинку криптовалюты')
+async def crypto_image(interaction: Interaction,
+                       id: str = SlashOption(
+                           description='Введите id криптовалюты. Получить его можно в /crypto-info'
+                       )):
+    url = 'https://pro-api.coinmarketcap.com/v2/cryptocurrency/info'
+    headers = {
+        'Accepts': 'application/json',
+        'X-CMC_PRO_API_KEY': API_Crypto
+    }
+    params = {
+        'id': id
+    }
+    response = requests.get(url, headers=headers, params=params)
+    if response.status_code == 200:
+        data = response.json()
+        image = data['data'][id]['logo']
+        await interaction.response.send_message(image)
+    else:
+        await interaction.response.send_message(f'Ошибка. Code: {response.status_code}', ephemeral=True)
 try:
     client_discord.run(TOKEN)
 except Exception as e:
