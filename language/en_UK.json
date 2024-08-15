@@ -1,0 +1,703 @@
+{
+  "Crypto": {
+    "Exchange": {
+      "Title": "Exchange",
+      "Value_title": "Main Info",
+      "Name": "Name:",
+      "Id": "ID:",
+      "Lowercase": "Lowercase:",
+      "Currencies": "Currencies:",
+      "Launch_date": "Launch Date:",
+      "Weekly_visits": "Weekly Visits:",
+      "Daily_volume": "Daily Trading Volume (USD):",
+      "Last_update": "Last Trade Update:"
+    },
+    "Admin": {
+      "Title": "API Key:",
+      "Information": {
+        "Title": "Information:",
+        "Request_Time": "Request Time:",
+        "Response_Duration": "Response Duration:",
+        "Token_Limit_Monthly": "Token Limit (Month):",
+        "Token_Reset_In": "Token Reset (In):",
+        "Token_Reset_At": "Token Reset (At):",
+        "Request_Limit_Minute": "Request Limit (Minute):",
+        "Tokens_Left_Month": "Tokens Left (Month):",
+        "Tokens_Used_Today": "Tokens Used (Today):",
+        "Tokens_Used_Month": "Tokens Used (Month):"
+      }
+    },
+    "Links": {
+      "Title": "Links:",
+      "Chat": "Chat:",
+      "Website": "Website:",
+      "Twitter": "Twitter (X):",
+      "Fee_policy": "Fee Policy:"
+    },
+    "Help": {
+      "Title": "Guidance on using commands with the /crypto prefix",
+      "Crypto_info": {
+        "Title": "Usage: Crypto-info",
+        "Description": {
+          "Usage": "/crypto-info crypto:x",
+          "Header": "x - Name of the cryptocurrency you want to get information about",
+          "Lower": "Select a cryptocurrency from the list to get information"
+        }
+      },
+      "Crypto_exchange": {
+        "Title": "Usage: Crypto-exchange",
+        "Description": {
+          "Usage": "/crypto-exchange name:x",
+          "Header": "x - Name of the exchange you want to get information about",
+          "Lower": "Enter the exchange name in lowercase. Example: binance"
+        }
+      },
+      "Crypto_list": {
+        "Title": "Usage: Crypto-list",
+        "Description": {
+          "Usage": "/crypto-list all:True, False",
+          "Header": "True - Will output a list of 50 cryptocurrencies",
+          "Lower": "False - Will output a list available in /crypto-info"
+        }
+      },
+      "Crypto_difference": {
+        "Title": "Usage: Crypto-difference",
+        "Description": {
+          "Usage": "/crypto-difference crypto:x convert:y",
+          "Header": "x - Name of the cryptocurrency from which you want to convert",
+          "Lower": "y - Name of the currency into which you want to convert the first one"
+        }
+      },
+      "Crypto_image": {
+        "Title": "Usage: Crypto-image",
+        "Description": {
+          "Usage": "/crypto-image id:x",
+          "Header": "x - Enter the ID of the cryptocurrency for the image",
+          "Lower": "You can get the ID in /crypto-info"
+        }
+      },
+      "Crypto_admin": {
+        "Title": "Usage: Crypto-admin",
+        "Description": {
+          "Usage": "/crypto-admin",
+          "Header": "Displays the current status of the API key",
+          "Lower": "Available only for Administrators"
+        }
+      }
+    },
+    "Other": {
+      "Title": "List of available cryptocurrencies",
+      "Header": "The main cryptocurrencies are **highlighted** in bold text",
+      "List_title": "List"
+    },
+    "Info": {
+      "Title": "Information on cryptocurrency",
+      "Symbol": "Symbol:",
+      "Id": "Id:",
+      "Price": "Price:",
+      "Market_cap": "Market Cap:",
+      "Volume_24h": "Volume 24h:",
+      "Change_24h": "% Change 24h:",
+      "Circulating_Supply": "Circulating Supply:",
+      "Cryptocurrency_page": "Cryptocurrency Page:"
+    },
+    "Trending": {
+      "Title": "Top {limit} in demand on (https://coinmarketcap.com/)",
+      "Description": {
+        "Name": "Name:",
+        "Id": "Id:",
+        "Symbol": "Symbol:",
+        "Tags": "Tags:",
+        "Date_added": "Date Added:"
+      }
+    },
+    "Difference": {
+      "Title": "Information on cryptocurrencies",
+      "Description": {
+        "Title": "Ratio {crypto_currency} to {convert_currency}",
+        "Header": "Selected currency: {crypto_currency}",
+        "Difference": "Difference: {price_difference:,.1f}",
+        "Convert": "Convert to: {convert_currency}",
+        "Lower": "Changes in 24 hours: {change_24h}%"
+      }
+    }
+  },
+  "Moderation": {
+    "Unban": {
+      "Title": "Information about unblocking",
+      "Admin": "Administrator: {mention}",
+      "Reason": "Reason: {reason}",
+      "Unbanned": "Unbanned: {user}"
+    },
+    "Unmute": {
+      "Title": "Information about the unmuting",
+      "Admin": "Administrator: {mention}",
+      "Reason": "Reason: {reason}",
+      "Unmuted": "Unmuted: {user}"
+    },
+    "Mute": {
+      "Title": "Information about muting",
+      "Admin": "Administrator: {mention}",
+      "Reason": "Reason: {reason}",
+      "Muted": "Muted: {user}"
+    },
+    "Kick": {
+      "Title": "Information about kicking",
+      "Admin": "Administrator: {mention}",
+      "Reason": "Reason: {reason}",
+      "Kicked": "Kicked: {user}"
+    },
+    "Warn": {
+      "Title": "Information about warning",
+      "Admin": "Administrator: {mention}",
+      "Reason": "Reason: {reason}",
+      "Warned": "Warned: {user}",
+      "Count": "Warn count: {count}"
+    },
+    "Show": {
+      "Title": "Information about {mention}",
+      "Count": "Warn count: {count}",
+      "Last": "Last warn: {last}"
+    },
+    "Admin_removal": {
+      "Title": "Removal from the administration",
+      "Admin": "{mention} You have been removed from the administrative role!",
+      "Reason": "Reason: Too many warnings",
+      "Lower": "To challenge the punishment, please contact the appeals"
+    },
+    "Ban": {
+      "Title": "Information about banning",
+      "Admin": "Administrator: {mention}",
+      "Reason": "Reason: {reason}",
+      "Banned": "Banned: {user}"
+    }
+  },
+  "Roles": {
+    "Getrole": {
+      "Title": "Role Assignment",
+      "Placeholder": "Select your group",
+      "Reason": "Clicked Getrole",
+      "Options": {
+        "R_71": {
+          "Label": "R-71",
+          "Description": "Click to get the R-71 group",
+          "Emoji": "😉"
+        },
+        "R_72": {
+          "Label": "R-72",
+          "Description": "Click to get the R-72 group",
+          "Emoji": "😉"
+        },
+        "IE_71": {
+          "Label": "IE-71",
+          "Description": "Click to get the IE-71 group",
+          "Emoji": "😉"
+        },
+        "IE_72": {
+          "Label": "IE-72",
+          "Description": "Click to get the IE-72 group",
+          "Emoji": "😉"
+        },
+        "II_71": {
+          "Label": "II-71",
+          "Description": "Click to get the II-71 group",
+          "Emoji": "😉"
+        },
+        "II_72": {
+          "Label": "II-72",
+          "Description": "Click to get the II-72 group",
+          "Emoji": "😉"
+        }
+      },
+      "Messages": {
+        "Success": "You have selected the {group} group and it has been assigned to you."
+      }
+    }
+  },
+  "Tickets": {
+    "Create": {
+      "Channel": {
+        "Title": "Ticket Created",
+        "Description": {
+          "Title": "Addressed by: {mention}",
+          "Header": "An appeal has been created on the topic: {category}",
+          "Lower": "Created by: {mention}"
+        }
+      },
+      "Admin": {
+        "Title": "Ticket Opening",
+        "Description": {
+          "Title": "Ticket opened by: {member}",
+          "Header": "Channel: <#{channel_id}>",
+          "Lower": "Created by: {member}"
+        }
+      }
+    },
+    "Close": {
+      "Title": "Closing a Ticket",
+      "Label": "Reason for closure",
+      "Callback": {
+        "Channel": {
+          "Title": "Ticket Closed",
+          "Description": {
+            "Title": "Ticket closed by: {mention}",
+            "Header": "Ticket was closed due to: {reason}",
+            "Lower": "Ticket will be deleted in 10 minutes"
+          }
+        },
+        "Admin": {
+          "Title": "Ticket Closed",
+          "Description": {
+            "Title": "Ticket closed by: {mention}",
+            "Header": "Channel: <#{channel_id}>",
+            "Lower": "Ticket was closed due to: {reason}"
+          }
+        }
+      }
+    },
+    "Review": {
+      "Callback": {
+        "Channel": {
+          "Title": "Review",
+          "Description": {
+            "Title": "Review left by: {mention}",
+            "Header": "Review: {feedback}",
+            "Lower": "Please close the request now"
+          }
+        },
+        "Admin": {
+          "Title": "Review",
+          "Description": {
+            "Title": "Review left by: {mention}",
+            "Header": "Review: {feedback}",
+            "Lower": "Channel: <#{channel_id}>"
+          }
+        }
+      }
+    },
+    "View": {
+      "Options": {
+        "Support": {
+          "Title": "Support",
+          "Description": "Getting help from the administration or teachers"
+        },
+        "Bot": {
+          "Title": "Bot",
+          "Description": "Getting help using a bot device"
+        }
+      },
+      "Callback": {
+        "Picked": "You picked {category}"
+      },
+      "Action": {
+        "Placeholder": "Select an action",
+        "Close": {
+          "Title": "Close Ticket",
+          "Description": "Close the appeal."
+        },
+        "Feedback": {
+          "Title": "Leave Feedback",
+          "Description": "Leave a review about the work of the administration"
+        }
+      }
+    }
+  },
+  "Errors": {
+    "Standard": {
+      "Error_message": "Error",
+      "Error_message_with_code": "Error: {e}",
+      "Request_error": "Request error. Code:",
+      "Not_enough_rights": "You don't have sufficient permissions to do that",
+      "File_Not_Found": "File not found",
+      "Folder_Not_Found": "Folder not found",
+      "Unknown_error": "Something went wrong! Error: {e}"
+    },
+    "Crypto": {
+      "Invalid_Exchange_name": "You entered an incorrect exchange name. Entered:",
+      "Not_picked": "Please select cryptocurrencies",
+      "Response_data_error": "An error occurred while retrieving the data"
+    },
+    "Database": {
+      "Folder_Not_Found": "Folder archive_database not found",
+      "File_Not_Found": "File {name}_discord.db not found. It may have already been moved to the archive.",
+      "Error_when_working": "Something went wrong while working with the database! Error: {e}"
+    },
+    "Os": {
+      "Copy_error": "Error while copying file. Code: {e}"
+    },
+    "Weather": {
+      "Title": "Error",
+      "Description": {
+        "Title": "Error while retrieving data",
+        "Value": "Error while requesting, please try again",
+        "Server_invalid": "Server is unavailable",
+        "Error": "Error occurred",
+        "Request_error": "Error while requesting weather",
+        "HTTP_error": "HTTP error: {e}"
+      }
+    },
+    "Log": {
+      "Folder_Not_Found": "Folder archive_logs not found",
+      "File_Not_Found": "Logs file not found",
+      "Permissions_Log": "I don't have sufficient rights to send the log file!",
+      "Channel_Not_Found": "Log channel not found",
+      "Download": {
+        "Incorrect_action": "You entered the wrong action with the download, please try again"
+      }
+    },
+    "Unban": {
+      "Not_Found": {
+        "Error": "The participant was not found in the blocked list"
+      }
+    },
+    "Bot": {
+      "Forbidden": "I don't have sufficient rights to do that!",
+      "Network": "Something went wrong with the connection, please try again"
+    },
+    "User": {
+      "Not_enough_rights": "{user} does not have sufficient permissions to do that"
+    },
+    "Clear": {
+      "Incorrect_value": "You entered an invalid number"
+    },
+    "Serverinfo": {
+      "Error": "You don't have sufficient rights to display the server information. Please go to the statistics channel",
+      "Send": "You don't have a statistics channel. Please create one with the name 'statistics' in lowercase"
+    },
+    "Warn": {
+      "Title": "Information",
+      "Value": "{member} not found in database"
+    },
+    "Join": {
+      "Channel_Not_Found": "Channel not found, please select the correct channel",
+      "Invalid_user": "There was an error sending a message to the user. Most likely the user is a bot or their direct messages are closed!"
+    }
+  },
+  "Log": {
+	  "Save": {
+		"Title": "This is the log file for the time since the last call.",
+		"Header": "Called: {member}",
+		"Center": "Date of creation:",
+		"Lower": "Last modified date:"
+	  },
+	  "Send": {
+		"Successfully": "The log file was successfully sent to the administrators in the logs channel and overwritten"
+	  },
+	  "Delete": {
+		"Current": {
+		  "Successfully": "The current log file has been deleted"
+		},
+		"Archive": {
+		  "Successfully": "The folder with the archive of logs has been successfully cleaned"
+		}
+		}
+  },
+  "Success": {
+	"Send_message": "Message sent successfully"
+  },
+  "Channel": {
+	"Channel": "Channel",
+	"Channel_id": "Channel ID:",
+	"Channel_name": "Channel Name:",
+	"Channel_type": "Channel Type:",
+	"Created_at": "Created At",
+	"Text_channel": {
+	  "Topic": "Topic:",
+	  "NSFW": "NSFW:"
+	},
+	"Voice_channel": {
+	  "Bitrate": "Bitrate:",
+	  "User_limit": "User Limit:",
+	  "Quality": "Quality:"
+	},
+	"Forum_channel": {
+	  "Tags": "Tags:",
+	  "NSFW": "NSFW:"
+	},
+	"Category_channel": {
+	  "Channels": "Channels:",
+	  "Position": "Position:"
+	},
+	"Stage_channel": {
+	  "User_limit": "User limit:",
+	  "Bitrate": "Bitrate:"
+	}
+  },
+  "Invites": {
+	"Title": "Here are the links for the server invitation:",
+	"Inviter": "Invitation from:",
+	"Link": "Link:",
+	"Use_count": "Times used: {uses}",
+	"Created_at": "Created At:",
+	"Expires_at": "Expires At:",
+	"No_invites": "There are no active links on the server at the moment!"
+  },
+  "Links": {
+	"Title": "Links",
+	"Author": {
+	  "Title": "Here are links to the author (creator) of the bot",
+	  "Creator_Page": "Creator's Page:",
+	  "Bot_Repository": "Bot Repository:",
+	  "Other_repositories": "Other repositories:"
+	},
+	"Links": {
+	  "Title": "Here are the official links to the institution's resources",
+	  "Site": "Main site:",
+	  "Schedule_Page": "Schedule Page:",
+	  "Auth_page": "Auth page:"
+	}
+  },
+  "Menu": {
+	"Verify": {
+	  "Title": "Getting a role",
+	  "Header": "Click the button below",
+	  "Center": "To obtain the role <@&1246041998054522880>",
+	  "Lower": "You need to click on the button below and select 'Verify'"
+	},
+	"Getrole": {
+	  "Title": "Getting a group",
+	  "Header": "Click the button below",
+	  "Center": "To get your group",
+	  "Lower": "You need to click on the button below and select your group"
+	},
+	"Ticket": {
+	  "Title": "Support ticket",
+	  "Header": "To open a support ticket, select the category below:",
+	  "Lower": "Describe your request or problem in as much detail as possible so that they can help you as quickly as possible."
+	}
+  },
+  "Database": {
+	"Start": {
+	  "Response": "Database {name}.db has been restarted."
+	},
+	"Save": {
+	  "Response": "Database {name}.db saved",
+	  "Header": "This is the database file of the last save.",
+	  "Center": "Called: {called}",
+	  "Lower": "Last modified date: <t:{last_change_timestamp}:R>"
+	},
+	"Archive": {
+	  "Title": "List of files in the database archive",
+	  "Header": "Size: {file_size:.2f}kb"
+	}
+  },
+  "Weather": {
+	"Title": "Weather in {city}",
+	"Description": {
+	  "Title": "City: {city}, Country: {country}",
+	  "Average_temp": "Average temperature: {temp}°C",
+	  "Minimum_temp": "Minimum temperature: {temp}°C",
+	  "Maximum_temp": "Maximum temperature: {temp}°C",
+	  "Feels_temp": "Temperature feels like {temp}°C",
+	  "Wind_speed": "Wind speed {speed} m/s",
+	  "Humidity": "Humidity: {humidity}",
+	  "Received": "Received time {time}",
+	  "Request_author": "Request sent by: {mention}",
+	  "Source": "Source: https://openweathermap.org/city/{source}"
+	}
+  },
+  "Say": {
+	"Successfully": "The message has been sent successfully"
+  },
+  "Info": {
+	"Title": "Information of {member}",
+	"Nickname": "Nickname: ",
+	"Mention": "Mention: ",
+	"Full_name": "Full name: ",
+	"Id": "Id: ",
+	"Joined_date": "Joined date: ",
+	"Created_date": "Account creation date: ",
+	"Main_role": "Main role: ",
+	"Roles": "Roles: ",
+	"Count_roles": "Roles count: "
+  },
+  "Help": {
+	"Moderation": {
+	  "Title": "Available server commands. Rank: Moderation",
+	  "Header": "The bot uses slash commands (/), Below are the available commands:",
+	  "Tab1": "Main",
+	  "Tab2": "Administration",
+	  "Tab3": "Other"
+	},
+	"Default": {
+	  "Title": "Available server commands",
+	  "Tab1": "Main"
+	}
+  },
+  "Ban_list": {
+	"Title": "The list of blocked",
+	"Reason": "Reason:",
+	"Footer": "On server {ban_count} blocked persons"
+  },
+  "Mute_list": {
+	"Title": "List of muted participants",
+	"Role": "Top role:",
+	"Footer": "On server {mute_count} muted persons"
+  },
+  "Members": {
+	"Title": "Server members",
+	"Role": "Top role:",
+	"Footer": "On server {count} members"
+  },
+  "Clear": {
+	"Successfully": "Messages have been successfully cleared"
+  },
+  "ServerInfo": {
+	"New_type": {
+	  "Main": {
+		"Title": "Main",
+		"Owner": "Owner: {owner}",
+		"Verification_lvl": "Verification_level: {verification_level_show}",
+		"Created_at": "Created at: ",
+		"About": "About {total_channels} channels",
+		"Text": "Text channels: {text_channels}",
+		"Voice": "Voice channels: {voice_channels}",
+		"Categories": "Categories: {categories}"
+	  },
+	  "Users": {
+		"Title": "Users",
+		"About": "About {total_members} members",
+		"Bots": "Bots: {bots}",
+		"Members": "Members: {members}"
+	  },
+	  "Boosts": {
+		"Title": "Boosts",
+		"Level": "Level: {boost_level}",
+		"Boosts": "Boost count: {boost_count}"
+	  },
+	  "Links": {
+		"Title": "Links",
+		"Telegram": "Telegram Channel: {telegram_link}",
+		"Discord": "Discord Server: {discord_link}"
+	  },
+	  "Footer": {
+		"Footer": "Request from {member}"	
+	  }
+	}
+  },
+  "Other": {
+	"Forbidden_find": "A forbidden word has been found in your message. Please do not violate any more."
+  },
+  "Leave": {
+	"Server": {
+	  "Title": "Good luck, participant {name} left the server",
+	  "Value": "Unfortunately, the user has left the server, good luck to him!"
+	},
+	"User": {
+	  "Title": "Good luck, you have left the server",
+	  "Value": "Unfortunately you have left the server, good luck to you!"
+	}
+  },
+  "Join": {
+	"Server": {
+	  "Title": "Hello, welcome to the server",
+	  "Description": {
+		"Title": "Information",
+		"Value": "Search for all the necessary information in the information channel"
+	  }	
+	},
+	"User": {
+	  "Title": "Hi, thanks for joining the server",
+	  "Description": {
+		"Title": "Information",
+		"Value": "You can find all the necessary information in the information channel."
+	  }
+	}
+  },
+  "Warn": {
+	"Title": "Warn",
+	"Description": {
+	  "Title": "{user} your warning was issued",
+	  "Reason": "Reason: {reason}",
+	  "Count": "You have {count} warnings"
+	}
+  },
+  "Logging": {
+	"Serverinfo": "Sending information about server",
+	"Join": "Joined new server: {guild_id}({guild_name})",
+	"Member_join": "New member joined: {name}",
+	"Ban": {
+	  "Interaction": "User {name} called the command to ban",
+	  "Banned": "The user {member} was blocked by {user} for the following reason: {reason}"
+	},
+	"Unban": {
+	  "Interaction": "User {name} called the command to unban",
+	  "Unbanned": "The user {member} was unbanned by {user} for the following reason: {reason}"
+	},
+	"Warn": {
+	  "Interaction": "User {name} called the command to warn",
+	  "Warned": "The user {member} was warned by {user} for the following reason: {reason}"
+	},
+	"Mute": {
+	  "Interaction": "User {name} called the command to mute",
+	  "Muted": "The user {member} was muted by {user} for the following reason: {reason}"
+	},
+	"Unmute": {
+	  "Interaction": "User {name} called the command to unmute",
+	  "Unmuted": "The user {member} was unmuted by {user} for the following reason: {reason}"
+	},
+	"Kick": {
+	  "Interaction": "User {name} called the command to kick",
+	  "Kicked": "The user {member} was kicked by {user} for the following reason: {reason}"
+	},
+	"Serverinfo": {
+	  "Interaction": "User {name} called the command to show serverinfo"
+	},
+	"Clear": {
+	  "Interaction": "User {name} called the command to clear messages"
+	},
+	"Members": {
+	  "Interaction": "User {name} called the command to show members list"
+	},
+	"Links": {
+	  "Interaction": "User {name} called the command to show links list"
+	},
+	"Invites": {
+	  "Interaction": "User {name} called the command to show invite list"
+	},
+	"Mute_list": {
+	  "Interaction": "User {name} called the command to show mute list"
+	},
+	"Ban_list": {
+	  "Interaction": "User {name} called the command to show ban list"
+	},
+	"Info": {
+	  "Interaction": "User {name} called the command to show info about user"
+	},
+	"Bot-info": {
+	  "Interaction": "User {name} called the command to show info about bot"
+	},
+	"Avatar": {
+	  "Interaction": "User {name} called the command to show avatar"
+	},
+	"Channel-info": {
+	  "Interaction": "User {name} called the command to show information about channel ({channel})"
+	},
+	"Weather": {
+	  "Interaction": "User {name} called the command to show weather",
+	  "Request": "Requesting information from openweathermap API",
+	  "Successfully": "Successfully received data about {city}"
+	},
+	"Log": {
+	  "Interaction": "User {name} called the command to interact with logs",
+	  "Request_current": "User {name} requested to download current log file",
+	  "Request_archive": "User {name} requested to download archive logs",
+	  "Request_else": "User {name} requested to download else log files from archive"
+	},
+	"Database": {
+	  "Interaction": "User {name} called the command to interact with databases"
+	},
+	"Say": {
+	  "Interaction": "User {name} called the command to say something by bot",
+	  "Sended": "User {name} sended ({message}) by bot"
+	},
+	"Help": {
+	  "Default": {
+		"Interaction": "User {name} called the command to show help (rank: Default member)"
+	  },
+	  "Moderation": {
+		"Interaction": "User {name} called the command to show help (rank: Administrator)"
+	  }
+	}
+  }
+}

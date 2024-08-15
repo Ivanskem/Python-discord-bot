@@ -1,0 +1,703 @@
+{
+  "Crypto": {
+    "Exchange": {
+      "Title": "Scambio",
+      "Value_title": "Informazioni Principali",
+      "Name": "Nome:",
+      "Id": "ID:",
+      "Lowercase": "Minuscolo:",
+      "Currencies": "Valute:",
+      "Launch_date": "Data di Lancio:",
+      "Weekly_visits": "Visite Settimanali:",
+      "Daily_volume": "Volume di Scambi Giornalieri (USD):",
+      "Last_update": "Ultimo Aggiornamento degli Scambi:"
+    },
+    "Admin": {
+      "Title": "Chiave API:",
+      "Information": {
+        "Title": "Informazioni:",
+        "Request_Time": "Tempo di Richiesta:",
+        "Response_Duration": "Durata della Risposta:",
+        "Token_Limit_Monthly": "Limite Token (Mese):",
+        "Token_Reset_In": "Reset Token (In):",
+        "Token_Reset_At": "Reset Token (Alle):",
+        "Request_Limit_Minute": "Limite Richieste (Minuto):",
+        "Tokens_Left_Month": "Token Rimasti (Mese):",
+        "Tokens_Used_Today": "Token Usati (Oggi):",
+        "Tokens_Used_Month": "Token Usati (Mese):"
+      }
+    },
+    "Links": {
+      "Title": "Link:",
+      "Chat": "Chat:",
+      "Website": "Sito Web:",
+      "Twitter": "Twitter (X):",
+      "Fee_policy": "Politica delle Commissioni:"
+    },
+    "Help": {
+      "Title": "Guida all'utilizzo dei comandi con il prefisso /crypto",
+      "Crypto_info": {
+        "Title": "Uso: Crypto-info",
+        "Description": {
+          "Usage": "/crypto-info crypto:x",
+          "Header": "x - Nome della criptovaluta di cui desideri ottenere informazioni",
+          "Lower": "Seleziona una criptovaluta dall'elenco per ottenere informazioni"
+        }
+      },
+      "Crypto_exchange": {
+        "Title": "Uso: Crypto-exchange",
+        "Description": {
+          "Usage": "/crypto-exchange name:x",
+          "Header": "x - Nome dello scambio di cui desideri ottenere informazioni",
+          "Lower": "Inserisci il nome dello scambio in minuscolo. Esempio: binance"
+        }
+      },
+      "Crypto_list": {
+        "Title": "Uso: Crypto-list",
+        "Description": {
+          "Usage": "/crypto-list all:True, False",
+          "Header": "True - Verrà visualizzato un elenco di 50 criptovalute",
+          "Lower": "False - Verrà visualizzato un elenco disponibile in /crypto-info"
+        }
+      },
+      "Crypto_difference": {
+        "Title": "Uso: Crypto-difference",
+        "Description": {
+          "Usage": "/crypto-difference crypto:x convert:y",
+          "Header": "x - Nome della criptovaluta da cui desideri convertire",
+          "Lower": "y - Nome della valuta in cui desideri convertire la prima"
+        }
+      },
+      "Crypto_image": {
+        "Title": "Uso: Crypto-image",
+        "Description": {
+          "Usage": "/crypto-image id:x",
+          "Header": "x - Inserisci l'ID della criptovaluta per l'immagine",
+          "Lower": "Puoi ottenere l'ID in /crypto-info"
+        }
+      },
+      "Crypto_admin": {
+        "Title": "Uso: Crypto-admin",
+        "Description": {
+          "Usage": "/crypto-admin",
+          "Header": "Visualizza lo stato corrente della chiave API",
+          "Lower": "Disponibile solo per gli Amministratori"
+        }
+      }
+    },
+	"Other": {
+	  "Title": "Elenco delle criptovalute disponibili",
+	  "Header": "Le criptovalute principali sono **evidenziate** in grassetto",
+	  "List_title": "Elenco"
+	},
+	"Info": {
+	  "Title": "Informazioni sulla criptovaluta",
+	  "Symbol": "Simbolo:",
+	  "Id": "Id:",
+	  "Price": "Prezzo:",
+	  "Market_cap": "Capitalizzazione di Mercato:",
+	  "Volume_24h": "Volume 24h:",
+	  "Change_24h": "% Variazione 24h:",
+	  "Circulating_Supply": "Offerta Circolante:",
+	  "Cryptocurrency_page": "Pagina della Criptovaluta:"
+	},
+	"Trending": {
+	  "Title": "Top {limit} più richiesti su (https://coinmarketcap.com/)",
+	  "Description": {
+		"Name": "Nome:",
+		"Id": "Id:",
+		"Symbol": "Simbolo:",
+		"Tags": "Tag:",
+		"Date_added": "Data Aggiunta:"
+	  }
+	},
+	"Difference": {
+	  "Title": "Informazioni sulle criptovalute",
+	  "Description": {
+		"Title": "Rapporto {crypto_currency} a {convert_currency}",
+		"Header": "Valuta selezionata: {crypto_currency}",
+		"Difference": "Differenza: {price_difference:,.1f}",
+		"Convert": "Converti in: {convert_currency}",
+		"Lower": "Cambiamenti nelle ultime 24 ore: {change_24h}%"
+	  }
+	}
+  },
+  "Moderation": {
+	"Unban": {
+	  "Title": "Informazioni sullo sblocco",
+	  "Admin": "Amministratore: {mention}",
+	  "Reason": "Motivo: {reason}",
+	  "Unbanned": "Sbloccato: {user}"
+	},
+	"Unmute": {
+	  "Title": "Informazioni sulla rimozione del silenziamento",
+	  "Admin": "Amministratore: {mention}",
+	  "Reason": "Motivo: {reason}",
+	  "Unmuted": "Rimosso il silenziamento: {user}"
+	},
+	"Mute": {
+	  "Title": "Informazioni sul silenziamento",
+	  "Admin": "Amministratore: {mention}",
+	  "Reason": "Motivo: {reason}",
+	  "Muted": "Silenziato: {user}"
+	},
+	"Kick": {
+	  "Title": "Informazioni sulla rimozione",
+	  "Admin": "Amministratore: {mention}",
+	  "Reason": "Motivo: {reason}",
+	  "Kicked": "Espulso: {user}"
+	},
+	"Warn": {
+	  "Title": "Informazioni sull'avvertimento",
+	  "Admin": "Amministratore: {mention}",
+	  "Reason": "Motivo: {reason}",
+	  "Warned": "Avvertito: {user}",
+	  "Count": "Conteggio avvertimenti: {count}"
+	},
+	"Show": {
+	  "Title": "Informazioni su {mention}",
+	  "Count": "Conteggio avvertimenti: {count}",
+	  "Last": "Ultimo avvertimento: {last}"
+	},
+	"Admin_removal": {
+	  "Title": "Rimozione dall'amministrazione",
+	  "Admin": "{mention} Sei stato rimosso dal posto amministrativo!",
+	  "Reason": "Motivo: Troppi avvertimenti",
+	  "Lower": "Per contestare la punizione, contatta l'appello"
+	},
+	"Ban": {
+	  "Title": "Informazioni sul blocco",
+	  "Admin": "Amministratore: {mention}",
+	  "Reason": "Motivo: {reason}",
+	  "Banned": "Bloccato: {user}"
+	}
+  },
+  "Roles": {
+    "Getrole": {
+      "Title": "Assegnazione del Ruolo",
+      "Placeholder": "Seleziona il tuo gruppo",
+	  "Reason": "Ha cliccato Getrole",
+      "Options": {
+        "R_71": {
+          "Label": "R-71",
+          "Description": "Clicca per ottenere il gruppo R-71",
+          "Emoji": "😉"
+        },
+        "R_72": {
+          "Label": "R-72",
+          "Description": "Clicca per ottenere il gruppo R-72",
+          "Emoji": "😉"
+        },
+        "IE_71": {
+          "Label": "IE-71",
+          "Description": "Clicca per ottenere il gruppo IE-71",
+          "Emoji": "😉"
+        },
+        "IE_72": {
+          "Label": "IE-72",
+          "Description": "Clicca per ottenere il gruppo IE-72",
+          "Emoji": "😉"
+        },
+        "II_71": {
+          "Label": "II-71",
+          "Description": "Clicca per ottenere il gruppo II-71",
+          "Emoji": "😉"
+        },
+        "II_72": {
+          "Label": "II-72",
+          "Description": "Clicca per ottenere il gruppo II-72",
+          "Emoji": "😉"
+        }
+      },
+      "Messages": {
+        "Success": "Hai selezionato il gruppo {group} e ti è stato assegnato."
+      }
+    }
+  },
+  "Tickets": {
+    "Create": {
+      "Channel": {
+        "Title": "Ticket Creato",
+        "Description": {
+          "Title": "Gestito da: {mention}",
+          "Header": "È stato creato un appello sul tema: {category}",
+          "Lower": "Creato da: {mention}"
+        }
+      },
+      "Admin": {
+        "Title": "Apertura Ticket",
+        "Description": {
+          "Title": "Ticket aperto da: {member}",
+          "Header": "Canale: <#{channel_id}>",
+          "Lower": "Creato da: {member}"
+        }
+      }
+    },
+    "Close": {
+      "Title": "Chiusura Ticket",
+      "Label": "Motivo della chiusura",
+      "Callback": {
+        "Channel": {
+          "Title": "Ticket Chiuso",
+          "Description": {
+            "Title": "Ticket chiuso da: {mention}",
+            "Header": "Il ticket è stato chiuso per: {reason}",
+            "Lower": "Il ticket sarà eliminato in 10 minuti"
+          }
+        },
+        "Admin": {
+          "Title": "Ticket Chiuso",
+          "Description": {
+            "Title": "Ticket chiuso da: {mention}",
+            "Header": "Canale: <#{channel_id}>",
+            "Lower": "Il ticket è stato chiuso per: {reason}"
+          }
+        }
+      }
+    },
+    "Review": {
+      "Callback": {
+        "Channel": {
+          "Title": "Recensione",
+          "Description": {
+            "Title": "Recensione lasciata da: {mention}",
+            "Header": "Recensione: {feedback}",
+            "Lower": "Per favore, chiudi ora la richiesta"
+          }
+        },
+        "Admin": {
+          "Title": "Recensione",
+          "Description": {
+            "Title": "Recensione lasciata da: {mention}",
+            "Header": "Recensione: {feedback}",
+            "Lower": "Canale: <#{channel_id}>"
+          }
+        }
+      }
+    },
+    "View": {
+      "Options": {
+        "Support": {
+          "Title": "Supporto",
+          "Description": "Ottenere aiuto dall'amministrazione o dai docenti"
+        },
+        "Bot": {
+          "Title": "Bot",
+          "Description": "Ottenere aiuto nell'utilizzo di un bot"
+        }
+      },
+      "Callback": {
+        "Picked": "Hai scelto {category}"
+      },
+      "Action": {
+        "Placeholder": "Seleziona un'azione",
+        "Close": {
+          "Title": "Chiudi Ticket",
+          "Description": "Chiudi l'appello."
+        },
+        "Feedback": {
+          "Title": "Lascia una recensione",
+          "Description": "Lascia una recensione sul lavoro dell'amministrazione"
+        }
+      }
+    }
+  },
+  "Errors": {
+    "Standart": {
+      "Error_message": "Errore",
+      "Error_message_with_code": "Errore: {e}",
+      "Request_error": "Errore di richiesta. Codice:",
+      "Not_enough_rights": "Non hai abbastanza permessi per farlo",
+      "File_Not_Found": "File non trovato",
+      "Folder_Not_Found": "Cartella non trovata",
+      "Unknown_error": "Qualcosa è andato storto! Errore: {e}"
+    },
+    "Crypto": {
+      "Invalid_Exchange_name": "Hai inserito il nome errato dello scambio. Inserito:",
+      "Not_picked": "Per favore, seleziona le criptovalute",
+      "Response_data_error": "Si è verificato un errore durante la ricezione dei dati"
+    },
+    "Database": {
+      "Folder_Not_Found": "Cartella archive_database non trovata",
+      "File_Not_Found": "File {name}_discord.db non trovato. Potrebbe essere già stato spostato nell'archivio.",
+      "Error_when_working": "Qualcosa è andato storto durante il lavoro con il database!. Errore: {e}"
+    },
+    "Os": {
+      "Copy_error": "Errore durante la copia del file. Codice: {e}"
+    },
+    "Weather": {
+      "Title": "Errore",
+      "Description": {
+        "Title": "Errore durante il recupero dei dati",
+        "Value": "Errore durante la richiesta, riprova",
+        "Server_invalid": "Il server non è disponibile",
+        "Error": "Si è verificato un errore",
+        "Request_error": "Errore durante la richiesta del meteo",
+        "HTTP_error": "Errore Http: {e}"
+      }
+    },
+    "Log": {
+      "Folder_Not_Found": "Cartella archive_logs non trovata",
+      "File_Not_Found": "File dei log non trovato",
+      "Permissions_Log": "Non ho abbastanza permessi per inviare il file di log!",
+      "Channel_Not_Found": "Canale di log non trovato",
+      "Download": {
+        "Incorrect_action": "Hai inserito un'azione errata con il download, riprova"
+      }
+    },
+    "Unban": {
+      "Not_Found": {
+        "Error": "Il partecipante non è stato trovato nell'elenco dei bloccati"
+      }
+    },
+    "Bot": {
+      "Forbidden": "Non ho abbastanza permessi per farlo!",
+      "Network": "Qualcosa è andato storto con la connessione, riprova"
+    },
+    "User": {
+      "Not_enough_rights": "{user} non ha abbastanza permessi per farlo"
+    },
+    "Clear": {
+      "Incorrect_value": "Hai inserito un numero errato"
+    },
+    "Serverinfo": {
+      "Error": "Non hai abbastanza diritti per visualizzare le informazioni del server. Per favore vai al canale delle statistiche",
+      "Send": "Non hai il canale delle statistiche, per favore crealo con il nome 'statistics' usa lettere minuscole"
+    },
+    "Warn": {
+      "Title": "Informazioni",
+      "Value": "{member} non trovato nel database"
+    },
+    "Join": {
+      "Channel_Not_Found": "Canale non trovato per favore seleziona il canale corretto",
+      "Invalid_user": "Si è verificato un errore durante l'invio del messaggio all'utente, molto probabilmente l'utente è un bot o i suoi messaggi privati sono chiusi!"
+    }
+  },
+  "Log": {
+  "Save": {
+    "Title": "Questo è il file di log per il tempo dall'ultima chiamata.",
+    "Header": "Chiamato da: {member}",
+    "Center": "Data di creazione:",
+    "Lower": "Data dell'ultima modifica:"
+  },
+  "Send": {
+    "Successfully": "Il file di log è stato inviato con successo agli amministratori nel canale dei log e sovrascritto"
+  },
+  "Delete": {
+    "Current": {
+      "Successfully": "Il file di log corrente è stato eliminato"
+    },
+    "Archive": {
+      "Successfully": "La cartella con l'archivio dei log è stata pulita con successo"
+    }
+  }
+},
+  "Success": {
+	"Send_message": "Messaggio inviato con successo"
+},
+  "Channel": {
+	"Channel": "Canale",
+	"Channel_id": "ID Canale:",
+	"Channel_name": "Nome Canale:",
+	"Channel_type": "Tipo di Canale:",
+	"Created_at": "Creato il",
+	"Text_channel": {
+		"Topic": "Argomento:",
+		"NSFW": "NSFW:"
+	},
+	"Voice_channel": {
+		"Bitrate": "Bitrate:",
+		"User_limit": "Limite Utenti:",
+		"Quality": "Qualità:"
+	},
+	"Forum_channel": {
+		"Tags": "Tag:",
+		"NSFW": "NSFW:"
+	},
+	"Category_channel": {
+		"Channels": "Canali:",
+		"Position": "Posizione:"
+	},
+	"Stage_channel": {
+		"User_limit": "Limite utenti:",
+		"Bitrate": "Bitrate:"
+	}
+	},
+  "Invites": {
+	"Title": "Ecco i link per l'invito al server:",
+	"Inviter": "Invito da:",
+	"Link": "Link:",
+	"Use_count": "Numero di utilizzi: {uses}",
+	"Created_at": "Creato il:",
+	"Expires_at": "Scade il:",
+	"No_invites": "Non ci sono link attivi sul server al momento!"
+},
+  "Links": {
+	"Title": "Link",
+	"Author": {
+		"Title": "Ecco i link all'autore (creatore) del bot",
+		"Creator_Page": "Pagina del Creatore:",
+		"Bot_Repository": "Repository del Bot:",
+		"Other_repositories": "Altri repository:"
+	},
+	"Links": {
+		"Title": "Ecco i link ufficiali alle risorse dell'istituzione",
+		"Site": "Sito principale:",
+		"Schedule_Page": "Pagina dell'orario:",
+		"Auth_page": "Pagina di autenticazione:"
+	}
+	},
+  "Menu": {
+	"Verify": {
+	"Title": "Ottenere un ruolo",
+	"Header": "Clicca sul pulsante qui sotto",
+	"Center": "Per ottenere il ruolo <@&1246041998054522880>",
+	"Lower": "Devi cliccare sul pulsante qui sotto e selezionare 'Verifica'"
+	},
+	"Getrole": {
+	"Title": "Ottenere un gruppo",
+	"Header": "Clicca sul pulsante qui sotto",
+	"Center": "Per ottenere il tuo gruppo",
+	"Lower": "Devi cliccare sul pulsante qui sotto e selezionare il tuo gruppo"
+	},
+	"Ticket": {
+	"Title": "Ticket di supporto",
+	"Header": "Per aprire un ticket di supporto, seleziona la categoria qui sotto:",
+	"Lower": "Descrivi la tua richiesta o problema nel modo più dettagliato possibile per ricevere aiuto il più rapidamente possibile."
+	}
+},
+  "Database": {
+	"Start": {
+		"Response": "Database {name}.db è stato riavviato."
+	},
+	"Save": {
+		"Response": "Database {name}.db salvato",
+		"Header": "Questo è il file del database dell'ultimo salvataggio.",
+		"Center": "Chiamato da: {called}",
+		"Lower": "Data dell'ultima modifica: <t:{last_change_timestamp}:R>"
+	},
+	"Archive": {
+		"Title": "Elenco dei file nell'archivio del database",
+		"Header": "Dimensione: {file_size:.2f}kb"
+	}
+},
+  "Weather": {
+	"Title": "Meteo in {city}",
+	"Description": {
+		"Title": "Città: {city}, Paese: {country}",
+		"Average_temp": "Temperatura media: {temp}°C",
+		"Minimum_temp": "Temperatura minima: {temp}°C",
+		"Maximum_temp": "Temperatura massima: {temp}°C",
+		"Feels_temp": "La temperatura percepita è {temp}°C",
+		"Wind_speed": "Velocità del vento {speed} m/s",
+		"Humidity": "Umidità: {humidity}",
+		"Received": "Ora di ricezione {time}",
+		"Request_author": "Richiesta inviata da: {mention}",
+		"Source": "Fonte: https://openweathermap.org/city/{source}"
+	}
+	},
+  "Say": {
+    "Successfully": "Il messaggio è stato inviato con successo"
+  },
+  "Info": {
+    "Title": "Informazioni su {member}",
+    "Nickname": "Nickname: ",
+    "Mention": "Menzione: ",
+    "Full_name": "Nome completo: ",
+    "Id": "Id: ",
+    "Joined_date": "Data di adesione: ",
+    "Created_date": "Data di creazione dell'account: ",
+    "Main_role": "Ruolo principale: ",
+    "Roles": "Ruoli: ",
+    "Count_roles": "Conteggio ruoli: "
+  },
+  "Help": {
+    "Moderation": {
+      "Title": "Comandi del server disponibili. Grado: Moderazione",
+      "Header": "Il bot utilizza i comandi slash (/), di seguito sono riportati i comandi disponibili:",
+      "Tab1": "Principale",
+      "Tab2": "Amministrazione",
+      "Tab3": "Altro"
+    },
+    "Default": {
+      "Title": "Comandi del server disponibili",
+      "Tab1": "Principale"
+    }
+  },
+  "Ban_list": {
+    "Title": "Elenco dei bloccati",
+    "Reason": "Motivo:",
+    "Footer": "Sul server {ban_coount} persone bloccate"
+  },
+  "Mute_list": {
+    "Title": "Elenco dei partecipanti silenziati",
+    "Role": "Ruolo principale:",
+    "Footer": "Sul server {mute_count} persone silenziate"
+  },
+  "Members": {
+    "Title": "Membri del server",
+    "Role": "Ruolo principale:",
+    "Footer": "Sul server {count} membri"
+  },
+  "Clear": {
+    "Successfully": "I messaggi sono stati cancellati con successo"
+  },
+  "ServerInfo": {
+    "New_type": {
+      "Main": {
+        "Title": "Principale",
+        "Owner": "Proprietario: {owner}",
+        "Verification_lvl": "Livello di verifica: {verification_level_show}",
+        "Created_at": "Creato il: ",
+        "About": "Circa {total_channels} canali",
+        "Text": "Canali testuali: {text_channels}",
+        "Voice": "Canali vocali: {voice_channels}",
+        "Categories": "Categorie: {categories}"
+      },
+      "Users": {
+        "Title": "Utenti",
+        "About": "Circa {total_members} membri",
+        "Bots": "Bot: {bots}",
+        "Members": "Membri: {members}"
+      },
+      "Boosts": {
+        "Title": "Potenzia",
+        "Level": "Livello: {boost_level}",
+        "Boosts": "Conteggio potenziamenti: {boost_count}"
+      },
+      "Links": {
+        "Title": "Link",
+        "Telegram": "Canale Telegram: {telegram_link}",
+        "Discord": "Server Discord: {discord_link}"
+      },
+      "Footer": {
+        "Footer": "Richiesta da {member}"  
+      }
+    }
+  },
+  "Other": {
+    "Forbidden_find": "È stata trovata una parola proibita nel tuo messaggio. Si prega di non violare ulteriormente."
+  },
+  "Leave": {
+    "Server": {
+      "Title": "Buona fortuna, il partecipante {name} ha lasciato il server",
+      "Value": "Purtroppo l'utente ha lasciato il server, buona fortuna!"
+    },
+    "User": {
+      "Title": "Buona fortuna, hai lasciato il server",
+      "Value": "Purtroppo hai lasciato il server, buona fortuna!"
+    }
+  },
+  "Join": {
+    "Server": {
+      "Title": "Ciao, benvenuto nel server",
+      "Description": {
+        "Title": "Informazioni",
+        "Value": "Cerca tutte le informazioni necessarie nel canale delle informazioni"
+      }  
+    },
+    "User": {
+      "Title": "Ciao, grazie per esserti unito al server",
+      "Description": {
+        "Title": "Informazioni",
+        "Value": "Puoi trovare tutte le informazioni necessarie nel canale delle informazioni."
+      }
+    }
+  },
+  "Warn": {
+    "Title": "Avvertimento",
+    "Description": {
+      "Title": "{user}, ti è stato dato un avvertimento",
+      "Reason": "Motivo: {reason}",
+      "Count": "Hai {count} avvertimenti"
+    }
+  },
+  "Logging": {
+    "Serverinfo": "Invio delle informazioni sul server",
+    "Join": "Unito al nuovo server: {guild_id}({guild_name})",
+    "Member_join": "Nuovo membro unito: {name}",
+    "Ban": {
+      "Interaction": "L'utente {name} ha chiamato il comando per il ban",
+      "Banned": "L'utente {member} è stato bloccato da {user} per il seguente motivo: {reason}"
+    },
+    "Unban": {
+      "Interaction": "L'utente {name} ha chiamato il comando per rimuovere il ban",
+      "Unbanned": "L'utente {member} è stato sbloccato da {user} per il seguente motivo: {reason}"
+    },
+    "Warn": {
+      "Interaction": "L'utente {name} ha chiamato il comando per avvertire",
+      "Warned": "L'utente {member} è stato avvertito da {user} per il seguente motivo: {reason}"
+    },
+    "Mute": {
+      "Interaction": "L'utente {name} ha chiamato il comando per silenziare",
+      "Muted": "L'utente {member} è stato silenziato da {user} per il seguente motivo: {reason}"
+    },
+    "Unmute": {
+      "Interaction": "L'utente {name} ha chiamato il comando per rimuovere il silenzio",
+      "Unmuted": "L'utente {member} è stato rimosso dal silenzio da {user} per il seguente motivo: {reason}"
+    },
+    "Kick": {
+      "Interaction": "L'utente {name} ha chiamato il comando per espellere",
+      "Kicked": "L'utente {member} è stato espulso da {user} per il seguente motivo: {reason}"
+    },
+    "Serverinfo": {
+      "Interaction": "L'utente {name} ha chiamato il comando per mostrare le informazioni del server"
+    },
+    "Clear": {
+      "Interaction": "L'utente {name} ha chiamato il comando per cancellare i messaggi"
+    },
+    "Members": {
+      "Interaction": "L'utente {name} ha chiamato il comando per mostrare l'elenco dei membri"
+    },
+    "Links": {
+      "Interaction": "L'utente {name} ha chiamato il comando per mostrare l'elenco dei link"
+    },
+    "Invites": {
+      "Interaction": "L'utente {name} ha chiamato il comando per mostrare l'elenco degli inviti"
+    },
+    "Mute_list": {
+      "Interaction": "L'utente {name} ha chiamato il comando per mostrare l'elenco dei silenziati"
+    },
+    "Ban_list": {
+      "Interaction": "L'utente {name} ha chiamato il comando per mostrare l'elenco dei bloccati"
+    },
+    "Info": {
+      "Interaction": "L'utente {name} ha chiamato il comando per mostrare le informazioni sull'utente"
+    },
+    "Bot-info": {
+      "Interaction": "L'utente {name} ha chiamato il comando per mostrare le informazioni sul bot"
+    },
+    "Avatar": {
+      "Interaction": "L'utente {name} ha chiamato il comando per mostrare l'avatar"
+    },
+    "Channel-info": {
+      "Interaction": "L'utente {name} ha chiamato il comando per mostrare le informazioni sul canale ({channel})"
+    },
+    "Weather": {
+      "Interaction": "L'utente {name} ha chiamato il comando per mostrare il meteo",
+      "Request": "Richiesta di informazioni dall'API di openweathermap",
+      "Successfully": "Dati ricevuti con successo su {city}"
+    },
+    "Log": {
+      "Interaction": "L'utente {name} ha chiamato il comando per interagire con i log",
+      "Request_current": "L'utente {name} ha richiesto di scaricare il file di log corrente",
+      "Request_archive": "L'utente {name} ha richiesto di scaricare i log d'archivio",
+      "Request_else": "L'utente {name} ha richiesto di scaricare altri file di log dall'archivio"
+    },
+    "Database": {
+      "Interaction": "L'utente {name} ha chiamato il comando per interagire con i database"
+    },
+    "Say": {
+      "Interaction": "L'utente {name} ha chiamato il comando per dire qualcosa tramite il bot",
+      "Sended": "L'utente {name} ha inviato ({message}) tramite il bot"
+    },
+    "Help": {
+      "Default": {
+        "Interaction": "L'utente {name} ha chiamato il comando per mostrare aiuto (rank: Membro predefinito)"
+      },
+      "Moderation": {
+        "Interaction": "L'utente {name} ha chiamato il comando per mostrare aiuto (rank: Amministratore)"
+      }
+    }
+  }
+}
